@@ -1,0 +1,10 @@
+local/*
+Test*.py
+*.tar.gz
+*.tar.bz2
+*TO-DO*.txt
+temp
+*.DS_*
+*Untitled*
+*.pyc
+.venv

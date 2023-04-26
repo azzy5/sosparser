@@ -1,0 +1,35 @@
+.vl {
+    border-left: 6px solid green;
+    height: 500px;
+    position: absolute;
+    left: 50%;
+    margin-left: -3px;
+    top: 0;
+  }
+.tooltipTrigger .tooltip {
+  display: none;
+}
+.tooltipTrigger:hover {
+  cursor: pointer;
+}
+.tooltipTrigger:hover .tooltip {
+  display: inline;
+  position: relative; /* relative to .tooltipTrigger */
+  left: 10px;
+  border: 1px solid #ccc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.row {
+  display: flex;
+}
+
+/* Create two equal columns that sits next to each other */
+.column {
+  flex: 50%;
+  padding: 10px;
+  height: 300px; /* Should be removed. Only for demonstration */
+}
