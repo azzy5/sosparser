@@ -1,92 +1,62 @@
-# SOSParser
+# SOSParser :sos:
+
+**SOSParser** makes dealing with logs collected from GitLabSOS a bit easier. Right now, it works with Production_json.log and Sidekiq current files, but it'll probably handle more file types later on. In addition, it can also provide a quick summary of information collected from various files in the GitLabSOS logs such as `cpuinfo`, `df_hT`, `gitlab_migrations`, `gitlab_status` and so on.
 
 
 
-## Getting started
+The tool is built using Python streamlit and pandas libraries, SOSParser turns log files into interactive tables where we can easily sort and filter columns. This helps us narrow down logs quickly. Once we filter the logs as per the requirements, we can export them as CSV files, with plans to add JSON export later on.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Prerequisites
 
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/gitlab-com/support/toolbox/sosparser.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/gitlab-com/support/toolbox/sosparser/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+- Python 3.7 or higher
+- pip (Python Package Installer)
 
 ## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+
+1. Clone the repository:
+
+```bash
+git clone gitlab-gold/azhar/support-projects/traceparser_sos.git
+cd traceparser_sos
+```
+
+2. Install the dependencies using the `requirements.txt` file:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Tool
+
+To run the tool, execute the following command:
+
+```bash
+streamlit run app.py
+```
+
+After running the command, a new browser window should open automatically. If it doesn't, you can access the tool by navigating to the following URL in your browser:
+
+```
+http://localhost:8501
+```
 
 ## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+- There are two ways to use the tool:
+    1. ### Using web interface:
+        1. Start the application from a terminal and let it run the background by using the command `streamlit run app.py`. 
+        1. - Visit _http://localhost:8501_ and paste the folder path in the text box in the UI (absolute path to the logs root directory)
+        1. location  in the webpage rendered by the application and then click on _Submit_
+    
+    2. ### Using command line interface:
+        1. Set an alias in the `~/.bashrc` or `~/.zshrc` file as  `alias sosparser='streamlit run /path/to/your/app.py -- '`
+        1. To start the app, pass the absolute path for log directory in the command line as follow : `sosparser /path/to/logs/root/folder`
+        1. The new window should open in the browser and the logs should be ready to review. 
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- If everything is okay you can find the logs details as follow:
+    - **Metadata** : This page shows metadata extracted from varirous files , such as 'top', 'df_hT' etc. It
+    it basically provides a quick overview of the system status.
+    - **Sidekiq** : This UI intented for Sidelkiq logs. It has multiple tables to filter, sort and     export data. Currently the tool only reads the _current_ file from the `/var/log/gitlab/sidekiq/current` directory.
+    - **Production** : Same thing as Sidekiq but for Production logs 
