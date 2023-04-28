@@ -184,6 +184,7 @@ def filterColumns(df):
         "db_replica_cached_count",
         "db_replica_wal_count",
         "db_replica_count",
+        "wal_locations",
         "db_main_replica_count",
         "db_main_replica_cached_count" ,
         "db_primary_wal_count",
@@ -191,10 +192,17 @@ def filterColumns(df):
         "db_replica_wal_cached_count",
         "db_replica_duration_s"
     ]
+    missing_columns = []
+    missing_columns = [column for column in sidekiq_columns if column not in df.columns]
+    missing_columns = [elem for elem in missing_columns if elem not in columns_remove]
+    for column in missing_columns:
+        if column not in df.columns:
+            df[column] = 0
+            assert (df[column] == 0).all(), f"Unexpected non-zero values in {column}"
     for x in df.columns:
         if x not in sidekiq_columns or x in columns_remove:
             df = df.drop(columns=x)
-    return df
+    return [df,missing_columns]
 
 dict_cType = {
     'User':'meta.user', 'Project': 'meta.project', 'Class' : 'class'

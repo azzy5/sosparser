@@ -113,7 +113,7 @@ dict_cType = {
 }
 
 dict_filter = {
-    'Duration':'duration_s', 'Memory' : 'mem_bytes' ,'DB Duration':'db_duration_s'
+    'Duration':'duration_s', 'Memory' : 'mem_bytes' ,'DB Duration':'db_duration_s', 'CPU' :'cpu_s'
 }
 
 def getTopInfoPD(df, cType='status',filter_type = 'duration_s'):
@@ -148,11 +148,17 @@ def convert_to_dataframe(log_data):
     return json_normalize(log_data)
 
 def filterColumnsPD(df):
-    removeColumns = ["db_main_replica_duration_s","db_replica_duration_s","db_main_replica_wal_cached_count","db_main_wal_cached_count","db_primary_wal_cached_count","db_main_wal_count","db_main_replica_wal_count","db_replica_wal_cached_count","db_write_count","db_primary_wal_count","db_replica_count", "db_main_replica_count", "db_replica_cached_count","db_primary_wal_count," "db_replica_count","db_main_replica_cached_count", "db_replica_wal_count"]
+    columns_remove = ["db_main_replica_duration_s","db_replica_duration_s","db_main_replica_wal_cached_count","db_main_wal_cached_count","db_primary_wal_cached_count","db_main_wal_count","db_main_replica_wal_count","db_replica_wal_cached_count","db_write_count","db_primary_wal_count","db_replica_count", "db_main_replica_count", "db_replica_cached_count","db_primary_wal_count," "db_replica_count","db_main_replica_cached_count", "db_replica_wal_count"]
+    missing_columns = []
+    missing_columns = [column for column in prodcution_columns if column not in df.columns]
+    missing_columns = [elem for elem in missing_columns if elem not in columns_remove]
+    for column in missing_columns:
+        if column not in df.columns:
+            df[column] = 0
     for x in df.columns:
-        if x not in prodcution_columns or x in removeColumns:
+        if x not in prodcution_columns or x in columns_remove:
             df = df.drop(columns=x)
-    return df
+    return [df,missing_columns]
 
 def mapColumnsPD(df):
     to_time=['time']
