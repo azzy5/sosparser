@@ -21,10 +21,7 @@ def validateFilepath(file_):
 
 def main():
     initialize()
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-    else:
-        file_path = ""
+    file_path = ""
     with st.sidebar:
         menuItems = ["Home", "Metadata", "Sidekiq", "Production", "Gitaly"]
         choice = option_menu(
@@ -59,18 +56,23 @@ def main():
             "<style>div.block-container{padding-top:0rem;}</style>",
             unsafe_allow_html=True,
         )
-        st.title("Sidekiq \U0001F916")
+        st.title("Sidekiq Logs \U0001F916")
         sidekiqPage()
 
     elif choice == "Production":
-        st.subheader("Production")
-        st.write("This is the production page")
+        st.write(
+            "<style>div.block-container{padding-top:0rem;}</style>",
+            unsafe_allow_html=True,
+        )
+        st.title("Production Logs :gear:")
         productionLogsPage()
 
     elif choice == "Gitaly":
-        st.subheader("Gitaly")
-        st.write("This is the gitaly page ")
-        st.write(st.session_state.file_path)
+        st.write(
+            "<style>div.block-container{padding-top:0rem;}</style>",
+            unsafe_allow_html=True,
+        )
+        st.title("Gitaly Logs :hourglass_flowing_sand:")
 
     elif choice == "Metadata":
         st.title("Metadata :warning:")
@@ -84,54 +86,49 @@ def main():
 
 def productionLogsPage():
     if st.session_state.valid:
-        df = getProductionLogDF(st.session_state.file_path)
+        df, debug = getProductionLogDF(st.session_state.file_path)
+        df,missing_columns = filterColumnsPD(df)
+        df = mapColumnsPD(df)
+        if len(missing_columns) > 0:
+            st.warning(
+                "The following columns are missing from the log file : {}".format(
+                    ", ".join(missing_columns))
+                )
+            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
         cm = st.columns([1, 1, 1, 1, 1, 1,1,1])
         metadata = metadataPD(df)
         for x, meta_in in enumerate(metadata.keys()):
             cm[x].metric(meta_in, metadata[meta_in])
         go = setupAGChart(df)
         response = AgGrid(
-            df, gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True
+            df, gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True,  key = "logTable"
         )
         selected = response["selected_rows"]
         if selected:
-            AgGrid(convert_to_dataframe(selected))
+            AgGrid(convert_to_dataframe(selected), key = "selectedTable")
         slt1, slt2, slt3 = st.columns([2, 2, 6])
         top_type = slt1.selectbox(" ", ['Controller','Project','Path', 'Remote IP', 'User', 'Worker ID', 'User Agent'])
-        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU", "Count"))
+        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
         dt = pd.json_normalize(getTopInfoPD(df, top_type, top_filter))
         st.markdown(
             '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
             unsafe_allow_html=True,
         )
         go = setupSmallAGChart(dt)
-        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        cwp,cep = st.columns([1,1])
+        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "topTable")
+        st.divider()
+        errors_ = showErrorsPD(df)
+        goShort = setupSmallAGChart(errors_)
+        st.markdown(
+            '<p class="font2">  Status between 400 - 500  </p>', unsafe_allow_html=True
+        )
+        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "400Table")
+        errors_ = showErrorsPD1(df)
+        st.markdown(
+            '<p class="font2">  Status above 499  </p>', unsafe_allow_html=True
+        )
+        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "500Table")
 
-        with cwp:
-            warnigs_ = showWarningsPD(df)
-            goShort = setupSmallAGChart(warnigs_)
-            st.markdown(
-                '<p class="font2">  Status between 200 - 300  </p>', unsafe_allow_html=True
-            )
-            AgGrid(warnigs_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-            warnigs_ = showWarningsPD1(df)
-            st.markdown(
-                '<p class="font2">  Status between 300 - 400  </p>', unsafe_allow_html=True
-            )            
-            AgGrid(warnigs_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        with cep:
-            errors_ = showErrorsPD(df)
-            goShort = setupSmallAGChart(errors_)
-            st.markdown(
-                '<p class="font2">  Status between 400 - 500  </p>', unsafe_allow_html=True
-            )
-            AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-            errors_ = showErrorsPD1(df)
-            st.markdown(
-                '<p class="font2">  Status above 499  </p>', unsafe_allow_html=True
-            )
-            AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
     return True
 
 
@@ -139,23 +136,39 @@ def productionLogsPage():
 def getProductionLogDF(file_path):
     lines, debug = read_log_file_pr(file_path)
     df = convert_to_dataframe(lines)
-    df = filterColumnsPD(df)
-    df = mapColumnsPD(df)    
-    return df
+    return [df,debug]
 
+
+@st.cache_data()
+def getSKDataFrame(file_path):
+    log_file, debug = read_log_file(file_path)
+    df = convert_to_dataframe(log_file)
+    return [df,debug]
+
+def gitalyPage():
+    return True
 
 def sidekiqPage():
     if st.session_state.valid:
-        df = getSKDataFrame(st.session_state.file_path)
+        df, debug = getSKDataFrame(st.session_state.file_path)
+        df,missing_columns = filterColumns(df)
+        df = mapColumns(df)
+        if len(missing_columns) > 0:
+            st.warning(
+                "The following columns are missing from the log file : {}".format(
+                    ", ".join(missing_columns))
+                )
+            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
+            
         cm = st.columns([1, 1, 1, 1, 1, 1, 1, 0.5])
         metadata = metadataSK(df)
         for x, meta_in in enumerate(metadata.keys()):
             cm[x].metric(meta_in, metadata[meta_in])
         cm[6].metric(
-            "Errors", df.query('severity == "ERROR"')["severity"].value_counts()[0]
+            "Errors", df.query('severity == "ERROR"')["severity"].value_counts().get(0, 0)
         )
         cm[7].metric(
-            "Warnings", df.query('severity == "WARN"')["severity"].value_counts()[0]
+            "Warnings", df.query('severity == "WARN"')["severity"].value_counts().get(0, 0)
         )
         goShort = setupAGChart(df)
         response = AgGrid(
@@ -196,15 +209,6 @@ def sidekiqPage():
             AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
 #        plotGraphs(df)
     return True
-
-
-@st.cache_data()
-def getSKDataFrame(file_path):
-    log_file, debug = read_log_file(file_path)
-    df = convert_to_dataframe(log_file)
-    df = filterColumns(df)
-    df = mapColumns(df)
-    return df
 
 
 def metadataPage():
@@ -381,22 +385,7 @@ def indexPage():
             unsafe_allow_html=True,
         )
         stb = st.text_input("---")
-        if len(sys.argv) > 1:
-            print("sys.argv[1] : ", sys.argv[1])
-            if validateFilepath(sys.argv[1]):
-                st.session_state.valid = True
-                st.session_state.file_path = sys.argv[1]
-                sys.argv = [sys.argv[0]]
-                c1.markdown("---")
-                c1.markdown(
-                    ":arrow_backward: Select the page from the dropdown menu in the side bar "
-                )
-
-                st.success("This is a success message!", icon="✅")
-            else:
-                st.error("Something went wrong, please check file path", icon="🔥")
-
-        if st.button("Submit") and stb != "":
+        if st.button("Submit"):
             with st.spinner(text="Validating the folder content, processing..."):
                 if validateFilepath(stb):
                     st.session_state.valid = True
