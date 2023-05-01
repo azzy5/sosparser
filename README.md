@@ -64,6 +64,8 @@ Once we have the Dataframe ready, we can perform lot of aithmentic and logical o
 
 Also, we can simply output the dataframe content as a table on the webpage. However, when we combine  this with the libraries like [AgGrid](https://www.ag-grid.com/javascript-data-grid/getting-started/) (free version) and [Streamlit](https://streamlit.io/) we can easily render a table which very interactive and provides lot of out of the features such as fitltering, sorting, pagination etc. 
 
+![SOSParser](static/1.jpg "SOSParser")
+
 ## Things to consider
 
 - The tool expects the log files to be available in thier default location inside SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
