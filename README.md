@@ -27,6 +27,12 @@ cd traceparser_sos
 pip install -r requirements.txt
 ```
 
+If you have pip3 installed then you can use
+
+```bash
+pip3 install -r requirements.txt
+```
+
 ## Running the Tool
 
 To run the tool, execute the following command:
