@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
 from helpers.file_process import *
-from st_aggrid import AgGrid, GridOptionsBuilder
-from st_aggrid.shared import JsCode
+from st_aggrid import AgGrid
 from helpers.utils import *
 from helpers.SidekiqLogs import *
 from helpers.productionLogs import *
+from helpers.gitalyLogs import *
 from os.path import exists
 import sys
 
@@ -73,6 +73,7 @@ def main():
             unsafe_allow_html=True,
         )
         st.title("Gitaly Logs :hourglass_flowing_sand:")
+        gitalyPage()
 
     elif choice == "Metadata":
         st.title("Metadata :warning:")
@@ -145,7 +146,27 @@ def getSKDataFrame(file_path):
     df = convert_to_dataframe(log_file)
     return [df,debug]
 
+@st.cache_data()
+def getGitalyDataFrame(file_path):
+    log_file, debug = read_log_file_gt(file_path)
+    df = convert_to_dataframe(log_file)
+    return [df,debug]
+
 def gitalyPage():
+    if st.session_state.valid:
+        df,debug = getGitalyDataFrame(st.session_state.file_path)
+        df,missing_columns = filterColumnsGT(df)
+        df = mapColumnsGT(df)
+        if len(missing_columns) > 0:
+            st.warning(
+                "The following columns are missing from the log file : {}".format(
+                    ", ".join(missing_columns))
+                )
+            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
+        goShort = setupAGChart(df)
+        response = AgGrid(
+            df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
+        )       
     return True
 
 def sidekiqPage():
