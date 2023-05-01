@@ -1,7 +1,6 @@
 # SOSParser :sos:
 
-**SOSParser** makes dealing with logs collected from GitLabSOS a bit easier. Right now, it works with Production_json.log and Sidekiq current files, but it'll probably handle more file types later on. In addition, it can also provide a quick summary of information collected from various files in the GitLabSOS logs such as `cpuinfo`, `df_hT`, `gitlab_migrations`, `gitlab_status` and so on.
-
+**SOSParser** makes dealing with logs collected from GitLabSOS a bit easier. Right now, it works with Production, Sidekiq and Gitaly log files. In addition, it can also provide a quick summary of information collected from various files in the GitLabSOS logs such as `cpuinfo`, `df_hT`, `gitlab_migrations`, `gitlab_status` and so on.
 
 
 The tool is built using Python streamlit and pandas libraries, SOSParser turns log files into interactive tables where we can easily sort and filter columns. This helps us narrow down logs quickly. Once we filter the logs as per the requirements, we can export them as CSV files, with plans to add JSON export later on.
@@ -10,7 +9,7 @@ The tool is built using Python streamlit and pandas libraries, SOSParser turns l
 ## Prerequisites
 
 - Python 3.7 or higher
-- pip (Python Package Installer)
+- pip (or pip3)
 
 ## Installation
 
@@ -47,22 +46,25 @@ After running the command, a new browser window should open automatically. If it
 http://localhost:8501
 ```
 
-## Usage
+Once the page is ready copy the absolute path of the logs directory and paste it in the text box on the application UI 
 
-- There are two ways to use the tool:
-    1. ### Using web interface:
-        1. Start the application from a terminal and let it run the background by using the command `streamlit run app.py`. 
-        1. - Visit _http://localhost:8501_ and paste the folder path in the text box in the UI (absolute path to the logs root directory)
-        1. location  in the webpage rendered by the application and then click on _Submit_
-    
-    2. ### Using command line interface:
-        1. Set an alias in the `~/.bashrc` or `~/.zshrc` file as  `alias sosparser='streamlit run /path/to/your/app.py -- '`
-        1. To start the app, pass the absolute path for log directory in the command line as follow : `sosparser /path/to/logs/root/folder`
-        1. The new window should open in the browser and the logs should be ready to review. 
+Example path for log directory:
 
+```
+/Users/azzy/Downloads/gitlabsos.dv-git-_20230329105343
+```
 
-- If everything is okay you can find the logs details as follow:
-    - **Metadata** : This page shows metadata extracted from varirous files , such as 'top', 'df_hT' etc. It
-    it basically provides a quick overview of the system status.
-    - **Sidekiq** : This UI intented for Sidelkiq logs. It has multiple tables to filter, sort and     export data. Currently the tool only reads the _current_ file from the `/var/log/gitlab/sidekiq/current` directory.
-    - **Production** : Same thing as Sidekiq but for Production logs 
+Then click on _Submit_ button and the application should validate the files that it is going to process further. If all the files exist, then then the logs can seen in thier respective UIs
+
+## How does this work?
+
+For each type of log, the tool looks for the file thier respective log directory and with bit of processing it converts the file contents into a [Padas Dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) which is 2D data structure ideal for storing data for rows and columns. 
+
+Once we have the Dataframe ready, we can perform lot of aithmentic and logical operations on the data as per requirement. For example, the application does all the calculations and produces output of fast-stat application with few lines of code for each log file.
+
+Also, we can simply output the dataframe content as a table on the webpage. However, when we combine  this with the libraries like [AgGrid](https://www.ag-grid.com/javascript-data-grid/getting-started/) (free version) and [Streamlit](https://streamlit.io/) we can easily render a table which very interactive and provides lot of out of the features such as fitltering, sorting, pagination etc. 
+
+## Things to consider
+
+- The tool expects the log files to be available in thier default location inside SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
+- If there's any column missing in the log file, the tool will add `0` to that column values and proceeds with the calculations
