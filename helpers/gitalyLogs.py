@@ -78,6 +78,35 @@ def mapColumnsGT(df):
     df.fillna(0, inplace=True)
     return df
 
+
+def metadataGT(df):
+    meta_ = {}
+    meta_['Count'] = df.query('`grpc.code` == "OK"')['grpc.code'].count()
+    meta_['RPS'] = round((meta_['Count']/(df.iloc[-1]['time'] - df.iloc[0]['time']).total_seconds()),1)
+    meta_['Duration'] = timeConversion( df['grpc.time_ms'].sum()/1000)
+    meta_['CPU'] = timeConversion( (df['command.system_time_ms'].sum()+df['command.user_time_ms'].sum())/1000)
+    meta_['GIT_RSS'] = convert_storage_units(df['command.maxrss'].sum())
+    meta_['Response Bytes'] =  convert_storage_units(df['response_bytes'].sum()/1024)
+    meta_['Disk Read'] =  df['command.inblock'].sum()
+    meta_['Disk Write'] =  df['command.oublock'].sum()
+    meta_['Fail Count'] = df.query('`grpc.code` == "NotFound"')['error'].count()
+    return meta_
+
+def convert_storage_units(value, input_unit="KB"):
+    if input_unit.upper() == "KB":
+        mb = value / 1024
+    elif input_unit.upper() == "MB":
+        mb = value
+    if mb < 1024:
+        return f"{mb:.2f} MB"
+    else:
+        gb = mb / 1024
+        if gb < 1024:
+            return f"{gb:.2f} GB"
+        else:
+            tb = gb / 1024
+            return f"{tb:.2f} TB"
+        
 def timeConversion(seconds):
     hours, rem = divmod(seconds, 3600)
     minutes, seconds = divmod(rem, 60)
@@ -85,3 +114,37 @@ def timeConversion(seconds):
     formatted_duration += f"{int(minutes)}m" if minutes >= 1 else ""
     formatted_duration += f"{seconds:.1f}s" if seconds >= 0.1 else ""
     return formatted_duration
+
+dict_cType = {
+    'Project':'grpc.request.glProjectPath', 'User': 'username', 'Client':'grpc.meta.client_name', 'Service' : 'grpc.service'
+}
+
+dict_filter = {
+    'Duration':'grpc.time_ms', 'Command CPU Time' : 'command.cpu_time_ms' ,'GRPC Time (ms)':'grpc.time_ms', 'Response Bytes' : 'response_bytes' 
+}
+
+def getTopInfoGT(df, cType='grpc.request.glProjectPath',filter_type = 'grpc.time_ms'):
+    cType = dict_cType[cType]
+    filter_type = dict_filter[filter_type]
+    t_duration = {}
+    df = df.loc[df[cType] != 0]
+    sorted_duration = df[cType].value_counts().sort_values(ascending=False)
+    for value in sorted_duration.index:
+        t_duration[value] = df.query("`{}` == '{}'".format(cType, value))['{}'.format(filter_type)].sum()
+    t_duration = sorted(t_duration.items(), key=lambda x: x[1], reverse=True)
+    cType_data = []
+
+    for cType_ in t_duration[:10]:
+        t = {}
+        dur_ = df.query("`{}` == '{}'".format(cType, cType_[0]))['grpc.time_ms'].sum()/1000
+        t['TYPE'] = cType_[0]
+        t['COUNT'] = df.query("`grpc.code` == 'OK' and `{}` == '{}'".format(cType, cType_[0]))[cType].count()
+#        t['RPS'] = t['COUNT']/dur_
+        t['DUR'] = timeConversion(dur_)
+        t['CPU'] = timeConversion((df.query("`{}` == '{}'".format(cType, cType_[0]))['command.cpu_time_ms'].sum()+df.query("`{}` == '{}'".format(cType, cType_[0]))['command.user_time_ms'].sum())/1000)
+        t['GIT_RSS'] = convert_storage_units(df.query("`{}` == '{}'".format(cType, cType_[0]))['command.maxrss'].sum()/1024)
+        t['RESP_BYTES'] = convert_storage_units(df.query("`{}` == '{}'".format(cType, cType_[0]))['response_bytes'].sum())
+        t['DISK_READ'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['command.inblock'].sum())
+        t['DISK_WRITE'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['command.oublock'].sum())
+        cType_data.append(t)
+    return cType_data 

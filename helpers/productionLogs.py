@@ -30,7 +30,7 @@ prodcution_columns = [
      "redis_sessions_allowed_cross_slot_calls",
      "redis_shared_state_calls",
      "redis_shared_state_duration_s",
-     "redis_shared_state_write_bytes"
+     "redis_shared_state_write_bytes",
     "ua",
     "queue_duration_s",
     "request_urgency",
@@ -106,8 +106,6 @@ def read_log_file_pr(file_path):
     return [lines, debug]
 
 
-# log_data = read_log_file("/Users/azzy/Desktop/GitLab_Projects/traceparser_sos/local/extracted/gitlabsos.omnibus-instance_20230408042046/var/log/gitlab/gitlab-rails/production_json.log")
-
 dict_cType = {
     'Controller':'controller',  'Project':'meta.project','Path': 'path', 'Remote IP' : 'remote_ip', 'User': 'meta.user', 'Worker ID' : 'worker_id', 'User Agent' : 'ua'
 }
@@ -117,7 +115,8 @@ dict_filter = {
 }
 
 def getTopInfoPD(df, cType='status',filter_type = 'duration_s'):
-    df['controller'] = df['controller'] + df['action']
+    if cType == 'Controller':
+        df['controller'] = df['controller'] + df['action']
     cType = dict_cType[cType]
     filter_type = dict_filter[filter_type]
     t_duration = {}
@@ -127,19 +126,16 @@ def getTopInfoPD(df, cType='status',filter_type = 'duration_s'):
         t_duration[value] = df.query("`{}` == '{}'".format(cType, value))['{}'.format(filter_type)].sum()
     t_duration = sorted(t_duration.items(), key=lambda x: x[1], reverse=True)
     cType_data = []
-    for cType_ in t_duration[:50]:
+    for cType_ in t_duration[:10]:
         t = {}
         t['TYPE'] = cType_[0]
         t['COUNT'] = df.query("`{}` == '{}'".format(cType, cType_[0]))[cType].value_counts()[0]
-        t['DUR'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['duration_s'].sum())
-        t['DB'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['db_duration_s'].sum())
-        t['REDIS'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['redis_duration_s'].sum())
-        t['GTLY'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['gitaly_duration_s'].sum())
-        t['CPU'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['cpu_s'].sum())
-        t['MEM'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['mem_bytes'].sum() / (1024 * 1024))
-        t['MEM'] = str(round(t['MEM'], 2)) + "Mb"
-        for c in dict(list(t.items())[2:6]):
-            t[c] = timeConversion(t[c])
+        t['DUR'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['duration_s'].sum())
+        t['DB_DUR'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['db_duration_s'].sum())
+        t['REDIS'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['redis_duration_s'].sum())
+        t['GTLY'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['gitaly_duration_s'].sum())
+        t['CPU'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['cpu_s'].sum())
+        t['MEM'] = convert_storage_units(df.query("`{}` == '{}'".format(cType, cType_[0]))['mem_bytes'].sum()/1024,"kb")
         cType_data.append(t)
     return cType_data 
 

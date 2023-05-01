@@ -106,7 +106,10 @@ def productionLogsPage():
         )
         selected = response["selected_rows"]
         if selected:
-            AgGrid(convert_to_dataframe(selected), key = "selectedTable")
+            st.markdown(
+                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
+            )
+            AgGrid(convert_to_dataframe(selected))
         slt1, slt2, slt3 = st.columns([2, 2, 6])
         top_type = slt1.selectbox(" ", ['Controller','Project','Path', 'Remote IP', 'User', 'Worker ID', 'User Agent'])
         top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
@@ -116,7 +119,7 @@ def productionLogsPage():
             unsafe_allow_html=True,
         )
         go = setupSmallAGChart(dt)
-        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "topTable")
+        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True)
         st.divider()
         errors_ = showErrorsPD(df)
         goShort = setupSmallAGChart(errors_)
@@ -163,10 +166,30 @@ def gitalyPage():
                     ", ".join(missing_columns))
                 )
             st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
+        cm = st.columns([1, 1, 1, 1, 1, 1, 1, 1,1])
+        metadata = metadataGT(df)
+        for x, meta_in in enumerate(metadata.keys()):
+            cm[x].metric(meta_in, metadata[meta_in])
         goShort = setupAGChart(df)
         response = AgGrid(
             df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
-        )       
+        )
+        selected = response["selected_rows"]
+        if selected:
+            st.markdown(
+                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
+            )
+            AgGrid(convert_to_dataframe(selected))
+        slt1, slt2, slt3 = st.columns([2, 2, 6])
+        top_type = slt1.selectbox(" ", ("Project", "User", "Client", "Service"))
+        top_filter = slt2.selectbox(" ", ("Duration", "Command CPU Time", "GRPC Time (ms)", "Response Bytes"))
+        dt = pd.json_normalize(getTopInfoGT(df, top_type, top_filter))
+        st.markdown(
+            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
+            unsafe_allow_html=True,
+        )
+        goShort = setupSmallAGChart(dt)
+        AgGrid(dt,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
     return True
 
 def sidekiqPage():
@@ -181,14 +204,14 @@ def sidekiqPage():
                 )
             st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
             
-        cm = st.columns([1, 1, 1, 1, 1, 1, 1, 0.5])
+        cm = st.columns([1, 1, 1, 1, 1, 1, 1,0.5, 1, 1])
         metadata = metadataSK(df)
         for x, meta_in in enumerate(metadata.keys()):
             cm[x].metric(meta_in, metadata[meta_in])
-        cm[6].metric(
+        cm[8].metric(
             "Errors", df.query('severity == "ERROR"')["severity"].value_counts().get(0, 0)
         )
-        cm[7].metric(
+        cm[9].metric(
             "Warnings", df.query('severity == "WARN"')["severity"].value_counts().get(0, 0)
         )
         goShort = setupAGChart(df)
@@ -489,7 +512,7 @@ font-size:35px ; color: #FF9633;}
     """,
         unsafe_allow_html=True,
     )
-    pd.options.plotting.backend = "plotly"
+    
     return True
 
 

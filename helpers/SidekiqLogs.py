@@ -1,10 +1,8 @@
-# write desciption stating this file is to parse sidekiq logs and author  is azhar
-
 from inspect import iscode
 from pandas import json_normalize
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, ColumnsAutoSizeMode
 import json
 
 
@@ -116,6 +114,7 @@ def setupAGChart(df):
         editable=False,
         width="100%",
         theme="ag-solar",
+        enable_enterprise_modules = False
     )
     gb.configure_side_bar()  # Add a sidebar
     gb.configure_selection("multiple", use_checkbox=True)  # Enable multi-row selection
@@ -123,7 +122,8 @@ def setupAGChart(df):
         enabled=True, paginationAutoPageSize=False, paginationPageSize=20
     )
     gb.configure_auto_height(autoHeight=True),
-    data_return_mode = ("AS_INPUT",)
+    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+    data_return_mode = ("AS_INPUT")
     enable_enterprise_modules = (False,)
     groupIncludeFooter = True
     return gb.build()
@@ -136,16 +136,16 @@ def setupSmallAGChart(df):
         resizable=True,
         filterable=True,
         sortable=True,
-        editable=False
+        editable=False,
+        enable_enterprise_modules = False
     )
     gb.configure_pagination(
         enabled=True, paginationAutoPageSize=False, paginationPageSize=10
     )
+    gb.configure_side_bar() 
     gb.configure_auto_height(autoHeight=True),
     return gb.build()
 
-
-    
     
 def read_log_file(file_path):
     print("reading file")
@@ -224,27 +224,29 @@ def getTopInfo(df, cType='meta.user',filter_type = 'duration_s'):
     cType_data = []
     for cType_ in t_duration[:10]:
         t = {}
+        dur_ = df.query("`{}` == '{}'".format(cType, cType_[0]))['duration_s'].sum()
         t['TYPE'] = cType_[0]
-        t['DUR'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['duration_s'].sum())
-        t['DB'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['db_duration_s'].sum())
-        t['REDIS'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['redis_duration_s'].sum())
-        t['GITLY'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['gitaly_duration_s'].sum())
-        t['CPU'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['cpu_s'].sum())
-        t['MEM'] = (df.query("`{}` == '{}'".format(cType, cType_[0]))['mem_bytes'].sum() / (1024 * 1024))
-        t['MEM'] = str(round(t['MEM'], 2)) + "Mb"
-        for c in dict(list(t.items())[1:6]):
-            t[c] = timeConversion(t[c])
+        t['COUNT'] = df.query("job_status =='done' and `{}` == '{}'".format(cType, cType_[0]))[cType].count()
+        t['RPS'] = (df['meta.user'].count()/dur_)
+        t['DUR'] = timeConversion(dur_)
+        t['DB'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['db_duration_s'].sum())
+        t['REDIS'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['redis_duration_s'].sum())
+        t['GITLY'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['gitaly_duration_s'].sum())
+        t['CPU'] = timeConversion(df.query("`{}` == '{}'".format(cType, cType_[0]))['cpu_s'].sum())
+        t['MEM'] = convert_storage_units(df.query("`{}` == '{}'".format(cType, cType_[0]))['mem_bytes'].sum()/1024,"KB")
         cType_data.append(t)
-    return cType_data  
+    return cType_data   
 
 def metadataSK(df):
     meta_ = {}
+    meta_['Count'] = df.query('job_status =="done"')['job_status'].count()
+#    meta_['RPS'] = round((meta_['Count']/(df.iloc[-1]['time'] - df.iloc[0]['time']).total_seconds()),1)
     meta_['Duration'] = timeConversion( df['duration_s'].sum())
     meta_['DB Duration'] = timeConversion( df['db_duration_s'].sum())
     meta_['Redis Duration'] = timeConversion( df['redis_duration_s'].sum())
     meta_['Gitaly Duration'] = timeConversion( df['gitaly_duration_s'].sum())
     meta_['CPU'] = timeConversion( df['cpu_s'].sum())
-    meta_['Memory'] = str(round(df['mem_bytes'].sum() / (1024 * 1024 * 1024), 1)) + "Gb"
+    meta_['Memory'] = convert_storage_units(df['mem_bytes'].sum()/1024,"KB")
     return meta_
 
 
@@ -283,3 +285,18 @@ def showWarningsSK(df):
 
 def showErrorsSK(df):
     return df.query('severity == "ERROR"')[['time' ,'correlation_id' , 'severity','message']]
+
+def convert_storage_units(value, input_unit="KB"):
+    if input_unit.upper() == "KB":
+        mb = value / 1024
+    elif input_unit.upper() == "MB":
+        mb = value
+    if mb < 1024:
+        return f"{mb:.2f} MB"
+    else:
+        gb = mb / 1024
+        if gb < 1024:
+            return f"{gb:.2f} GB"
+        else:
+            tb = gb / 1024
+            return f"{tb:.2f} TB"
