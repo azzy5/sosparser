@@ -8,15 +8,17 @@ from helpers.SidekiqLogs import *
 from helpers.productionLogs import *
 from helpers.gitalyLogs import *
 from os.path import exists
+from PIL import Image
 import sys
 
-def validateFilepath(file_):
+def validateFilepath(file_, c):
     file_path = file_
-    for f in files_:
-        if exists(file_ + f):
-            st.markdown(" Read file : _*" + f + "*_  :white_check_mark:")
-        else:
-            return False
+    with c:
+        for f in files_:
+            if exists(file_ + f):
+                st.markdown(" Read file : _*" + f + "*_  :white_check_mark:")
+            else:
+                return False
     return True
 
 def main():
@@ -49,37 +51,22 @@ def main():
             },
         )
     if choice == "Home":
-        st.title("\U0001F6A8	SOS \U0001F6A8 Parser \U0001F5C3").align = "center"
+        logo("\U0001F6A8	SOS \U0001F6A8 Parser \U0001F5C3")
         indexPage()
     elif choice == "Sidekiq":
-        st.write(
-            "<style>div.block-container{padding-top:0rem;}</style>",
-            unsafe_allow_html=True,
-        )
-        st.title("Sidekiq Logs \U0001F916")
+        logo("Sidekiq Logs \U0001F916")
         sidekiqPage()
 
     elif choice == "Production":
-        st.write(
-            "<style>div.block-container{padding-top:0rem;}</style>",
-            unsafe_allow_html=True,
-        )
-        st.title("Production Logs :gear:")
+        logo("Production Logs :gear:")
         productionLogsPage()
 
     elif choice == "Gitaly":
-        st.write(
-            "<style>div.block-container{padding-top:0rem;}</style>",
-            unsafe_allow_html=True,
-        )
-        st.title("Gitaly Logs :hourglass_flowing_sand:")
+        logo("Gitaly Logs :hourglass_flowing_sand:")
         gitalyPage()
 
     elif choice == "Metadata":
-        st.title("Metadata :warning:")
-        st.markdown(
-            "This is displays infomration parsed from various files availabe in the GitLabSOS logs"
-        )
+        logo("Metadata :warning:")
         metadataPage()
 
     return True
@@ -415,14 +402,9 @@ def indexPage():
                     Here are some of the hilights :"
         )
         st.markdown(
-            "1. The _Metadata_ page shows all the metadata extarcted from various files from the GitLabSOS logs"
+            "For more information on the tool, please refer to the project : [SOSParser](https://gitlab.com/gitlab-com/support/toolbox/sosparser)"
         )
-        st.markdown(
-            "2. There will be dedicted pages for Sidekiq, Production, Gitaly etc.. These pages will have file specific information"
-        )
-        st.markdown("3. Faststar outputs ")
-
-    with c2:
+        st.markdown(   "---")
         # create a text field and a button. When button is pressed, the text field contents should be passed to a function called 'onButtonCliked()'
         st.markdown(
             '<p class="font1">Input the log root directory here</p>',
@@ -431,17 +413,16 @@ def indexPage():
         stb = st.text_input("---")
         if st.button("Submit"):
             with st.spinner(text="Validating the folder content, processing..."):
-                if validateFilepath(stb):
+                if validateFilepath(stb, c2):
                     st.session_state.valid = True
-                    c1.markdown("---")
-                    c1.markdown(
+                    c2.markdown("---")
+                    c2.markdown(
                         ":arrow_backward: Select the page from the dropdown menu in the side bar "
                     )
                     st.session_state.file_path = stb
-                    st.success("This is a success message!", icon="✅")
+                    c2.success("This is a success message!", icon="✅")
                 else:
-                    st.error("Something went wrong, please check file path", icon="🔥")
-
+                    c2.error("Something went wrong, please check file path", icon="🔥")
 
 def initialize():
     st.set_page_config(
@@ -512,9 +493,19 @@ font-size:35px ; color: #FF9633;}
     """,
         unsafe_allow_html=True,
     )
-    
     return True
 
+
+def logo(text):
+
+    cl1,cl2,cl3 = st.columns([10,10,5])
+    st.write(
+        "<style>div.block-container{padding-top:0rem;}</style>",
+        unsafe_allow_html=True,
+    )
+    cl1.title(text)
+    image = Image.open('static/gitlab_logo.png')
+    cl3.image(image,width=200)
 
 if __name__ == "__main__":
     main()
