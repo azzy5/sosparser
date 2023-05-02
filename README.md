@@ -16,8 +16,8 @@ The tool is built using Python streamlit and pandas libraries, SOSParser turns l
 1. Clone the repository:
 
 ```bash
-git clone gitlab-gold/azhar/support-projects/traceparser_sos.git
-cd traceparser_sos
+git clone git@gitlab.com:gitlab-com/support/toolbox/sosparser.git
+cd sosparser
 ```
 
 2. Install the dependencies using the `requirements.txt` file:
@@ -29,6 +29,15 @@ pip install -r requirements.txt
 If you have pip3 installed then you can use
 
 ```bash
+pip3 install -r requirements.txt
+```
+
+If you want to use a [virtual environment](https://docs.python.org/3/library/venv.html), run the following commands instead:
+
+
+```bash
+virtualenv venv
+source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
