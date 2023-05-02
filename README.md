@@ -16,7 +16,7 @@ The tool is built using Python streamlit and pandas libraries, SOSParser turns l
 1. Clone the repository:
 
 ```bash
-git clone gitlab-gold/azhar/support-projects/traceparser_sos.git
+git clone git@gitlab.com:gitlab-com/support/toolbox/sosparser.git
 cd traceparser_sos
 ```
 
