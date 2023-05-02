@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
 from streamlit_option_menu import option_menu
+from streamlit_plotly_events import plotly_events
 from helpers.file_process import *
 from st_aggrid import AgGrid
 from helpers.utils import *
 from helpers.SidekiqLogs import *
 from helpers.productionLogs import *
 from helpers.gitalyLogs import *
+from helpers.plotting import *
 from os.path import exists
 from PIL import Image
 import sys
@@ -119,7 +121,14 @@ def productionLogsPage():
             '<p class="font2">  Status above 499  </p>', unsafe_allow_html=True
         )
         AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "500Table")
-
+        st.divider()
+        fig = interativeGraph(df)
+#        st.plotly_chart(fig, use_container_width=True)
+        selected_point = plotly_events(fig, click_event=True, hover_event=False)
+        if selected_point:
+#            st.write(selected_point)
+            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
+            st.table(df.query("time == '{}'".format(timeStamp)))
     return True
 
 
@@ -177,6 +186,14 @@ def gitalyPage():
         )
         goShort = setupSmallAGChart(dt)
         AgGrid(dt,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
+        st.divider()
+        fig = interativeGraph(df)
+#        st.plotly_chart(fig, use_container_width=True)
+        selected_point = plotly_events(fig, click_event=True, hover_event=False)
+        if selected_point:
+#            st.write(selected_point)
+            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
+            st.table(df.query("time == '{}'".format(timeStamp)))
     return True
 
 def sidekiqPage():
@@ -238,7 +255,14 @@ def sidekiqPage():
                 '<p class="font2">  Errors  </p>', unsafe_allow_html=True
             )
             AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-#        plotGraphs(df)
+        st.divider()
+        fig = interativeGraph(df)
+#        st.plotly_chart(fig, use_container_width=True)
+        selected_point = plotly_events(fig, click_event=True, hover_event=False)
+        if selected_point:
+#            st.write(selected_point)
+            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
+            st.table(df.query("time == '{}'".format(timeStamp)))
     return True
 
 
@@ -396,10 +420,6 @@ def indexPage():
     with c1:
         st.markdown(
             " This tool uses *Streamlit & Pandas* libries to parse and display the logs on the page."
-        )
-        st.markdown(
-            " The tool with then extract the log files and converts then into a Pandas DataFrame. To switch between different log files use the sidebar menu. \
-                    Here are some of the hilights :"
         )
         st.markdown(
             "For more information on the tool, please refer to the project : [SOSParser](https://gitlab.com/gitlab-com/support/toolbox/sosparser)"

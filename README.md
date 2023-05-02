@@ -66,6 +66,13 @@ Also, we can simply output the dataframe content as a table on the webpage. Howe
 
 ![SOSParser](static/1.jpg "SOSParser")
 
+## Plotting graphs
+
+- The tool provides an interactive graph to check values if each value over the time. The X-axis is the time and Y-axis is the value of the column, which can be changed in the realtime by selecting the column from the dropdown.
+- Each data point on the graph can be clicked to see the log data associated with it, here's an example:
+
+![SOSParser](static/2.jpg "SOSParser")
+
 ## Things to consider
 
 - The tool expects the log files to be available in thier default location inside SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
