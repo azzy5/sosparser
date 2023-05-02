@@ -17,7 +17,7 @@ The tool is built using Python streamlit and pandas libraries, SOSParser turns l
 
 ```bash
 git clone git@gitlab.com:gitlab-com/support/toolbox/sosparser.git
-cd traceparser_sos
+cd sosparser
 ```
 
 2. Install the dependencies using the `requirements.txt` file:
