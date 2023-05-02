@@ -32,6 +32,15 @@ If you have pip3 installed then you can use
 pip3 install -r requirements.txt
 ```
 
+If you want to use a [virtual environment](https://docs.python.org/3/library/venv.html), run the following commands instead:
+
+
+```bash
+virtualenv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+```
+
 ## Running the Tool
 
 To run the tool, execute the following command:
