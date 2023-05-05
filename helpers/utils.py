@@ -1,3 +1,5 @@
+
+import json
 # global variables
 error_class = "alert alert-danger"
 success_class = "alert alert-success"
@@ -22,6 +24,36 @@ files_ = [
 
 def getFilteredDataSK(df):
     return df[["time", "severity", "cpu_s", "duration_s", "db_duration_s"]]
+
+
+def getJobLogsForCorrelationID(correlation_id, realtivePath, logsType):
+    logsType_ = {
+        "Production": "/var/log/gitlab/gitlab-rails/production_json.log",
+        "Sidekiq": "/var/log/gitlab/sidekiq/current",
+        "Gitaly": "/var/log/gitlab/gitaly/current"
+    }
+    correlation_id_ = []
+    for c in correlation_id:
+        correlation_id_.append(c["correlation_id"])
+    print(correlation_id_)
+    read_path = realtivePath + logsType_[logsType]
+    print(read_path)
+    lines = []
+    debug = []
+    with open(
+        read_path , "r"
+    ) as file:
+        log_lines = file.readlines()
+    for x, line in enumerate(log_lines):
+        try:
+            l = json.loads(line)
+            if any(item in l["correlation_id"] for item in correlation_id_): 
+                lines.append(l)
+        except:
+            pass
+    return lines
+
+
 
 
 def convert_storage_units(value, input_unit="KB"):

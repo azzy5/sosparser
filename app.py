@@ -98,7 +98,13 @@ def productionLogsPage():
             st.markdown(
                 '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
             )
-            AgGrid(convert_to_dataframe(selected))
+            AgGrid(convert_to_dataframe(selected), gridOptions=go)
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Production"))
         slt1, slt2, slt3 = st.columns([2, 2, 6])
         top_type = slt1.selectbox(" ", ['Controller','Project','Path', 'Remote IP', 'User', 'Worker ID', 'User Agent'])
         top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
@@ -176,6 +182,12 @@ def gitalyPage():
                 '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
             )
             AgGrid(convert_to_dataframe(selected))
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Gitaly"))
         slt1, slt2, slt3 = st.columns([2, 2, 6])
         top_type = slt1.selectbox(" ", ("Project", "User", "Client", "Service"))
         top_filter = slt2.selectbox(" ", ("Duration", "Command CPU Time", "GRPC Time (ms)", "Response Bytes"))
@@ -228,6 +240,12 @@ def sidekiqPage():
                 '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
             )
             AgGrid(convert_to_dataframe(selected))
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Sidekiq"))
         slt1, slt2, slt3 = st.columns([2, 2, 6])
         top_type = slt1.selectbox(" ", ("User", "Project", "Class"))
         top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
@@ -466,17 +484,17 @@ def initialize():
     st.markdown(hide_table_row_index, unsafe_allow_html=True)
     # Font 1
     st.markdown(
-        """ <style> .font1 {
-font-size:30px ; color: #FF9633;} 
-</style> """,
+                """ <style> .font1 {
+        font-size:30px ; color: #FF9633;} 
+        </style> """,
         unsafe_allow_html=True,
     )
     # Font 2
     # Font 1
     st.markdown(
-        """ <style> .font2 {
-font-size:35px ; color: #FF9633;} 
-</style> """,
+                """ <style> .font2 {
+        font-size:35px ; color: #FF9633;} 
+        </style> """,
         unsafe_allow_html=True,
     )
     st.markdown(
