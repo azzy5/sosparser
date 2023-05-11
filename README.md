@@ -67,22 +67,22 @@ Then click on _Submit_ button and the application should validate the files that
 
 ## How does this work?
 
-For each type of log, the tool looks for the file thier respective log directory and with bit of processing it converts the file contents into a [Padas Dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html) which is 2D data structure ideal for storing data for rows and columns. 
+For each type of log, the tool looks for the file in its respective log directory and converts the file contents into a [Pandas Dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html), which is 2D data structure ideal for storing data in rows and columns. 
 
-Once we have the Dataframe ready, we can perform lot of aithmentic and logical operations on the data as per requirement. For example, the application does all the calculations and produces output of fast-stat application with few lines of code for each log file.
+Once we have the Dataframe ready, we can perform lots of arithmetic and logical operations on the data. For example, the application does all the calculations and produces output of [fast-stats](https://gitlab.com/gitlab-com/support/toolbox/fast-stats) with few lines of code for each log file.
 
-Also, we can simply output the dataframe content as a table on the webpage. However, when we combine  this with the libraries like [AgGrid](https://www.ag-grid.com/javascript-data-grid/getting-started/) (free version) and [Streamlit](https://streamlit.io/) we can easily render a table which very interactive and provides lot of out of the features such as fitltering, sorting, pagination etc. 
+We can also simply output the Dataframe content as a table on a webpage. However, when we combine  this with libraries like [AgGrid](https://www.ag-grid.com/javascript-data-grid/getting-started/) (free version) and [Streamlit](https://streamlit.io/) we can easily render a highly interactive table with features like filtering, sorting, and pagination. 
 
 ![SOSParser](static/1.jpg "SOSParser")
 
 ## Plotting graphs
 
-- The tool provides an interactive graph to check values if each value over the time. The X-axis is the time and Y-axis is the value of the column, which can be changed in the realtime by selecting the column from the dropdown.
-- Each data point on the graph can be clicked to see the log data associated with it, here's an example:
+- The tool provides an interactive graph to plot a table column's values over the time. The X-axis is the time and Y-axis is the value of the column, which can be changed in realtime by selecting a column from the dropdown.
+- Each data point on the graph can be clicked to see the log data associated with it. Here's an example:
 
 ![SOSParser](static/2.png "SOSParser")
 
 ## Things to consider
 
-- The tool expects the log files to be available in thier default location inside SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
-- If there's any column missing in the log file, the tool will add `0` to that column values and proceeds with the calculations
+- The tool expects the log files to be available in their default location inside the SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
+- If a column is missing in the log file, the tool will display that column's values as `0` in the table.
