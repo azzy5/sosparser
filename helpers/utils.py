@@ -16,9 +16,7 @@ files_ = [
     "/gitlab_migrations",
     "/df_hT",
     "/pressure_cpu.txt",
-    "/top_cpu",
-    "/var/log/gitlab/gitlab-rails/production_json.log",
-    "/var/log/gitlab/sidekiq/current",
+    "/top_cpu"
 ]
 
 

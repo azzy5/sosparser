@@ -11,7 +11,6 @@ from helpers.gitalyLogs import *
 from helpers.plotting import *
 from os.path import exists
 from PIL import Image
-import sys
 
 def validateFilepath(file_, c):
     file_path = file_
