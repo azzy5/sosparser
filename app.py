@@ -436,7 +436,7 @@ def indexPage():
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            " This tool uses *Streamlit & Pandas* libries to parse and display the logs on the page."
+            " This tool uses *Streamlit & Pandas* libraries to parse and display the logs on the page."
         )
         st.markdown(
             "For more information on the tool, please refer to the project : [SOSParser](https://gitlab.com/gitlab-com/support/toolbox/sosparser)"
