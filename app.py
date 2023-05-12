@@ -463,7 +463,7 @@ def indexPage():
 
 def initialize():
     st.set_page_config(
-        page_title="Trace Parser",
+        page_title="SOS Parser",
         page_icon="\U0001F6A8",
         layout="wide",
         initial_sidebar_state="expanded",
