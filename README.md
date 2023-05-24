@@ -46,7 +46,7 @@ pip3 install -r requirements.txt
 To run the tool, execute the following command:
 
 ```bash
-streamlit run app.py --server.gatherUsageStats=false
+streamlit run app.py --browser.gatherUsageStats=false
 ```
 
 After running the command, a new browser window should open automatically. If it doesn't, you can access the tool by navigating to the following URL in your browser:
