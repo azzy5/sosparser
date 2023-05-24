@@ -71,6 +71,9 @@ prodcution_columns = [
     "db_main_duration_s",
     "db_main_replica_duration_s",
     "cpu_s",
+    "exception.class",
+    "exception.message",
+    "exception.cause_class",
     "mem_objects",
     "mem_bytes",
     "mem_mallocs",
@@ -192,10 +195,10 @@ def showWarningsPD(df):
     return df.query('status > 200 and status <= 299')[['time','correlation_id' ,'status','controller']]
 
 def showWarningsPD1(df):
-    return df.query('status > 300 and status <= 399')[['time','correlation_id' ,'status','controller']]
+    return df.query('status > 300 and status <= 399')[['time','correlation_id' ,'status','controller',"exception.class", "exception.message","exception.cause_class"]]
 
 def showErrorsPD(df):
-    return df.query('status > 399 and status <= 499')[['time','correlation_id' , 'status','controller']]
+    return df.query('status > 399 and status <= 499')[['time','correlation_id' , 'status','controller', "exception.class", "exception.message","exception.cause_class"]]
 
 def showErrorsPD1(df):
-    return df.query('status > 499')[['time','correlation_id' , 'status','controller']]
+    return df.query('status > 499')[['time','correlation_id' , 'status','controller', "exception.class", "exception.message","exception.cause_class"]]
