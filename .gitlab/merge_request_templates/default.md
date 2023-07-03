@@ -51,3 +51,4 @@ Example: `We have discussed the topic in Slack - (copy of Slack conversation). T
 [mr-buddies-slack]: https://gitlab.slack.com/archives/CLM8K5LF4
 [company-fyi-slack]: https://gitlab.slack.com/archives/C010XFJFTHN
 [whats-happening-at-gitlab-slack]: https://gitlab.slack.com/archives/C0259241C
+

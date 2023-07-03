@@ -1,16 +1,23 @@
-import streamlit as st
+# AgGrid (free) https://www.ag-grid.com/javascript-data-grid/getting-started/
+from st_aggrid import AgGrid, DataReturnMode, GridUpdateMode
+
+# pandas: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html 
 import pandas as pd
+
+# streamlit : https://discuss.streamlit.io
+import streamlit as st
 from streamlit_option_menu import option_menu
 from streamlit_plotly_events import plotly_events
+
 from helpers.file_process import *
-from st_aggrid import AgGrid
-from helpers.utils import *
-from helpers.SidekiqLogs import *
-from helpers.productionLogs import *
 from helpers.gitalyLogs import *
 from helpers.plotting import *
-from os.path import exists
+from helpers.productionLogs import *
+from helpers.sidekiqLogs import *
+from helpers.utils import *
+
 from PIL import Image
+from os.path import exists
 
 def validateFilepath(file_, c):
     file_path = file_
@@ -26,7 +33,8 @@ def main():
     initialize()
     file_path = ""
     with st.sidebar:
-        menuItems = ["Home", "Metadata", "Sidekiq", "Production", "Gitaly"]
+        # Ensure "Metadata" remains top of menu after "Home" in sidebar for quick system details check
+        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq"]
         choice = option_menu(
             "Menu",
             menuItems,
@@ -51,110 +59,24 @@ def main():
                 "nav-link-selected": {"background-color": "#02ab21"},
             },
         )
+
     if choice == "Home":
         logo("\U0001F6A8	SOS \U0001F6A8 Parser \U0001F5C3")
         indexPage()
+    elif choice == "Gitaly":
+        logo("Gitaly Logs :hourglass_flowing_sand:")
+        gitalyPage()
+    elif choice == "Metadata":
+        logo("Metadata :warning:")
+        metadataPage()
+    elif choice == "Production":
+        logo("Production Logs :gear:")
+        productionLogsPage()
     elif choice == "Sidekiq":
         logo("Sidekiq Logs \U0001F916")
         sidekiqPage()
 
-    elif choice == "Production":
-        logo("Production Logs :gear:")
-        productionLogsPage()
-
-    elif choice == "Gitaly":
-        logo("Gitaly Logs :hourglass_flowing_sand:")
-        gitalyPage()
-
-    elif choice == "Metadata":
-        logo("Metadata :warning:")
-        metadataPage()
-
     return True
-
-
-def productionLogsPage():
-    if st.session_state.valid:
-        df, debug = getProductionLogDF(st.session_state.file_path)
-        df,missing_columns = filterColumnsPD(df)
-        df = mapColumnsPD(df)
-        if len(missing_columns) > 0:
-            st.warning(
-                "The following columns are missing from the log file : {}".format(
-                    ", ".join(missing_columns))
-                )
-            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
-        cm = st.columns([1, 1, 1, 1, 1, 1,1,1])
-        metadata = metadataPD(df)
-        for x, meta_in in enumerate(metadata.keys()):
-            cm[x].metric(meta_in, metadata[meta_in])
-        go = setupAGChart(df)
-        response = AgGrid(
-            df, gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True,  key = "logTable"
-        )
-        selected = response["selected_rows"]
-        if selected:
-            st.markdown(
-                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
-            )
-            AgGrid(convert_to_dataframe(selected), gridOptions=go)
-            sjl = st.button("Show Job Logs")
-            if sjl:
-                st.markdown(
-                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
-                )
-                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Production"))
-        slt1, slt2, slt3 = st.columns([2, 2, 6])
-        top_type = slt1.selectbox(" ", ['Controller','Project','Path', 'Remote IP', 'User', 'Worker ID', 'User Agent'])
-        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
-        dt = pd.json_normalize(getTopInfoPD(df, top_type, top_filter))
-        st.markdown(
-            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
-            unsafe_allow_html=True,
-        )
-        go = setupSmallAGChart(dt)
-        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        st.divider()
-        errors_ = showErrorsPD(df)
-        goShort = setupSmallAGChart(errors_)
-        st.markdown(
-            '<p class="font2">  Status between 400 - 500  </p>', unsafe_allow_html=True
-        )
-        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "400Table")
-        errors_ = showErrorsPD1(df)
-        st.markdown(
-            '<p class="font2">  Status above 499  </p>', unsafe_allow_html=True
-        )
-        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "500Table")
-        st.divider()
-        fig = interativeGraph(df)
-#        st.plotly_chart(fig, use_container_width=True)
-        selected_point = plotly_events(fig, click_event=True, hover_event=False)
-        if selected_point:
-#            st.write(selected_point)
-            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
-            st.table(df.query("time == '{}'".format(timeStamp)))
-    return True
-
-
-@st.cache_data()
-def getProductionLogDF(file_path):
-    lines, debug = read_log_file_pr(file_path)
-    df = convert_to_dataframe(lines)
-    return [df,debug]
-
-
-@st.cache_data()
-def getSKDataFrame(file_path):
-    log_file, debug = read_log_file(file_path)
-    df = convert_to_dataframe(log_file)
-    return [df,debug]
-
-@st.cache_data()
-def getGitalyDataFrame(file_path):
-    log_file, debug = read_log_file_gt(file_path)
-    df = convert_to_dataframe(log_file)
-    return [df,debug]
 
 def gitalyPage():
     if st.session_state.valid:
@@ -198,7 +120,7 @@ def gitalyPage():
         goShort = setupSmallAGChart(dt)
         AgGrid(dt,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
         st.divider()
-        fig = interativeGraph(df)
+        fig = interactiveGraph(df)
 #        st.plotly_chart(fig, use_container_width=True)
         selected_point = plotly_events(fig, click_event=True, hover_event=False)
         if selected_point:
@@ -206,82 +128,6 @@ def gitalyPage():
             timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
             st.table(df.query("time == '{}'".format(timeStamp)))
     return True
-
-def sidekiqPage():
-    if st.session_state.valid:
-        df, debug = getSKDataFrame(st.session_state.file_path)
-        df,missing_columns = filterColumns(df)
-        df = mapColumns(df)
-        if len(missing_columns) > 0:
-            st.warning(
-                "The following columns are missing from the log file : {}".format(
-                    ", ".join(missing_columns))
-                )
-            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
-            
-        cm = st.columns([1, 1, 1, 1, 1, 1, 1,0.5, 1, 1])
-        metadata = metadataSK(df)
-        for x, meta_in in enumerate(metadata.keys()):
-            cm[x].metric(meta_in, metadata[meta_in])
-        cm[8].metric(
-            "Errors", df.query('severity == "ERROR"')["severity"].value_counts().get(0, 0)
-        )
-        cm[9].metric(
-            "Warnings", df.query('severity == "WARN"')["severity"].value_counts().get(0, 0)
-        )
-        goShort = setupAGChart(df)
-        response = AgGrid(
-            df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
-        )
-        selected = response["selected_rows"]
-        if selected:
-            st.markdown(
-                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
-            )
-            AgGrid(convert_to_dataframe(selected))
-            sjl = st.button("Show Job Logs")
-            if sjl:
-                st.markdown(
-                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
-                )
-                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Sidekiq"))
-        slt1, slt2, slt3 = st.columns([2, 2, 6])
-        top_type = slt1.selectbox(" ", ("User", "Project", "Class"))
-        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
-        dt = pd.json_normalize(getTopInfo(df, top_type, top_filter))
-        st.markdown(
-            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
-            unsafe_allow_html=True,
-        )
-        goShort = setupSmallAGChart(dt)
-        AgGrid(dt,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        cw,ce = st.columns([1,1])
-
-        with cw:
-            warnigs_ = showWarningsSK(df)
-            goShort = setupSmallAGChart(warnigs_)
-            st.markdown(
-                '<p class="font2">  Warnings  </p>', unsafe_allow_html=True
-            )
-            
-            AgGrid(warnigs_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        with ce:
-            errors_ = showErrorsSK(df)
-            goShort = setupSmallAGChart(errors_)
-            st.markdown(
-                '<p class="font2">  Errors  </p>', unsafe_allow_html=True
-            )
-            AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
-        st.divider()
-        fig = interativeGraph(df)
-#        st.plotly_chart(fig, use_container_width=True)
-        selected_point = plotly_events(fig, click_event=True, hover_event=False)
-        if selected_point:
-#            st.write(selected_point)
-            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
-            st.table(df.query("time == '{}'".format(timeStamp)))
-    return True
-
 
 def metadataPage():
     pm1, pm2 = st.columns([6, 2])
@@ -425,6 +271,181 @@ def metadataPage():
             pm2.markdown("No data found")
     return True
 
+def productionLogsPage():
+    if st.session_state.valid:
+        df, debug = getProductionLogDF(st.session_state.file_path)
+        df,missing_columns = filterColumnsPD(df)
+        df = mapColumnsPD(df)
+        if len(missing_columns) > 0:
+            st.warning(
+                "The following columns are missing from the log file : {}".format(
+                    ", ".join(missing_columns))
+                )
+            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
+        cm = st.columns([1, 1, 1, 1, 1, 1,1,1])
+        metadata = metadataPD(df)
+        for x, meta_in in enumerate(metadata.keys()):
+            cm[x].metric(meta_in, metadata[meta_in])
+        go = setupAGChart(df)
+        response = AgGrid(
+            df, gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True,  key = "logTable"
+        )
+        selected = response["selected_rows"]
+        if selected:
+            st.markdown(
+                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
+            )
+            AgGrid(convert_to_dataframe(selected), gridOptions=go)
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Production"))
+        slt1, slt2, slt3 = st.columns([2, 2, 6])
+        top_type = slt1.selectbox(" ", ['Controller','Project','Path', 'Remote IP', 'User', 'Worker ID', 'User Agent'])
+        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
+        dt = pd.json_normalize(getTopInfoPD(df, top_type, top_filter))
+        st.markdown(
+            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
+            unsafe_allow_html=True,
+        )
+        go = setupSmallAGChart(dt)
+        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True)
+        st.divider()
+        errors_ = showErrorsPD(df)
+        goShort = setupSmallAGChart(errors_)
+        st.markdown(
+            '<p class="font2">  Status between 400 - 500  </p>', unsafe_allow_html=True
+        )
+        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "400Table")
+        errors_ = showErrorsPD1(df)
+        st.markdown(
+            '<p class="font2">  Status above 499  </p>', unsafe_allow_html=True
+        )
+        AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "500Table")
+        st.divider()
+        fig = interactiveGraph(df)
+#        st.plotly_chart(fig, use_container_width=True)
+        selected_point = plotly_events(fig, click_event=True, hover_event=False)
+        if selected_point:
+#            st.write(selected_point)
+            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
+            st.table(df.query("time == '{}'".format(timeStamp)))
+    return True
+
+
+@st.cache_data()
+def getProductionLogDF(file_path):
+    lines, debug = read_log_file_pr(file_path)
+    df = convert_to_dataframe(lines)
+    return [df,debug]
+
+
+@st.cache_data()
+def getSKDataFrame(file_path):
+    log_file, debug = read_log_file(file_path)
+    df = convert_to_dataframe(log_file)
+    return [df,debug]
+
+@st.cache_data()
+def getGitalyDataFrame(file_path):
+    log_file, debug = read_log_file_gt(file_path)
+    df = convert_to_dataframe(log_file)
+    return [df,debug]
+
+ 
+
+def sidekiqPage():
+    if st.session_state.valid:
+        df, debug = getSKDataFrame(st.session_state.file_path)
+        df,missing_columns = filterColumns(df)
+        df = mapColumns(df)
+        if len(missing_columns) > 0:
+            st.warning(
+                "The following columns are missing from the log file : {}".format(
+                    ", ".join(missing_columns))
+                )
+            st.warning("The tool will auto populate the missing columns with default values, so the results might be inaccurate")
+            
+        cm = st.columns([1, 1, 1, 1, 1, 1, 1,0.5, 1, 1])
+        metadata = metadataSK(df)
+        for x, meta_in in enumerate(metadata.keys()):
+            cm[x].metric(meta_in, metadata[meta_in])
+        cm[8].metric(
+            "Errors", df.query('severity == "ERROR"')["severity"].value_counts().get(0, 0)
+        )
+        cm[9].metric(
+            "Warnings", df.query('severity == "WARN"')["severity"].value_counts().get(0, 0)
+        )
+        goShort = setupAGChart(df)
+        response = AgGrid(
+            df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
+        )
+        selected = response["selected_rows"]
+        if selected:
+            st.markdown(
+                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
+            )
+            AgGrid(convert_to_dataframe(selected))
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"Sidekiq"))
+        slt1, slt2, slt3 = st.columns([2, 2, 6])
+        top_type = slt1.selectbox(" ", ("User", "Project", "Class"))
+        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
+        dt = pd.json_normalize(getTopInfo(df, top_type, top_filter))
+        st.markdown(
+            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
+            unsafe_allow_html=True,
+        )
+        goShort = setupSmallAGChart(dt)
+        AgGrid(dt,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True)
+
+        ##
+	## Create tables for Warnings and Errors
+
+        cw,ce = st.columns([1,1])
+	
+	##
+	## Warnings table 
+        
+        with cw:
+            warnings_ = showWarningsSK(df)
+            goShort = setupSmallAGChart(warnings_)
+            st.markdown(
+                '<p class="font2">  Warnings  </p>', unsafe_allow_html=True
+            )
+            
+            AgGrid(warnings_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "SKWarnings")
+        
+	#
+	# Errors table 
+	
+        with ce:
+            errors_ = showErrorsSK(df)
+            goShort = setupSmallAGChart(errors_)
+            st.markdown(
+                '<p class="font2">  Errors  </p>', unsafe_allow_html=True
+            )
+            AgGrid(errors_,gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "SKErrors")
+        
+        st.divider()
+        fig = interactiveGraph(df)
+#        st.plotly_chart(fig, use_container_width=True)
+        selected_point = plotly_events(fig, click_event=True, hover_event=False)
+        if selected_point:
+#            st.write(selected_point)
+            timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
+            st.table(df.query("time == '{}'".format(timeStamp)))
+    return True
+
+
+
+
 
 def process_file(file_):
     st.spinner(text="File uploaded, processing...")
@@ -531,7 +552,6 @@ def initialize():
         unsafe_allow_html=True,
     )
     return True
-
 
 def logo(text):
 
