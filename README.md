@@ -82,6 +82,13 @@ We can also simply output the Dataframe content as a table on a webpage. However
 
 ![SOSParser](static/2.png "SOSParser")
 
+## Exporting Table Results 
+
+You can export results from dataframes with right-click and select one of the `Export as ...` options. You can also export  
+after you have filtered, sorted and modified columns on the output, so that only the selected data is generated in the export file.
+
+![SOSParser](static/3-export-csv.png "SOSParser")
+
 ## Things to consider
 
 - The tool expects the log files to be available in their default location inside the SOS logs directory. For example, the Sidekiq logs are located at `var/log/gitlab/sidekiq/current`. 
