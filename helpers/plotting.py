@@ -16,7 +16,7 @@ color_sequence=[
     "#d5dae5",
 ]
 
-def interativeGraph(df , x_lable='time', title= "Graph"):
+def interactiveGraph(df , x_lable='time', title= "Graph"):
     y_lable = st.selectbox("Select y-axis for graph", df.columns)
     fig = px.scatter (df, x="time", y=y_lable, title=title, color=y_lable, color_discrete_sequence = color_sequence, hover_data=['correlation_id']) 
     return fig

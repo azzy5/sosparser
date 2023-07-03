@@ -61,10 +61,24 @@ def uptime(folder_):
     with open(folder_ + '/uptime', 'r') as file:
         input_str = file.readline().strip()
 
-    system_time = re.search(r'^\S+ \S+', input_str).group()
-    up_time = re.search(r'up (.*?),', input_str).group(1)
-    users = int(re.search(r'(\d+) user', input_str).group(1))
-    load_average = re.search(r'load average: (.*)', input_str).group(1)
+    system_time = re.search(r'^\S+ \S+', input_str)
+    up_time = re.search(r'up (.*?),', input_str)
+    users = re.search(r'(\d+) user', input_str)
+    load_average = re.search(r'load average: (.*)', input_str)
+    
+    #
+    # Check if result is not None
+    # This is fix for error: `fix AttributeError: 'NoneType' object has no attribute 'group'`
+    # taken from https://sebhastian.com/attributeerror-nonetype-object-has-no-attribute-group/
+
+    if system_time is not None:
+        system_time = system_time.group()
+    if up_time is not None:
+        up_time = up_time.group(1)
+    if users is not None:
+        users = int(users.group(1))
+    if load_average is not None:
+        load_average = load_average.group(1)
 
     return {
         'system_time': system_time,
