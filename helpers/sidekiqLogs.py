@@ -5,8 +5,6 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, ColumnsAutoSizeMode
 import json
 
-
-
 sidekiq_columns = [
     "severity",
     "time",
