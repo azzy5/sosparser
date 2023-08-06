@@ -34,7 +34,7 @@ def main():
     file_path = ""
     with st.sidebar:
         # Ensure "Metadata" remains top of menu after "Home" in sidebar for quick system details check
-        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq"]
+        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq","Version Manifest"]
         choice = option_menu(
             "Menu",
             menuItems,
@@ -44,6 +44,7 @@ def main():
                 "kanban",
                 "gear",
                 "git",
+                "hash"
             ],
             menu_icon="app-indicator",
             default_index=0,
@@ -63,6 +64,9 @@ def main():
     if choice == "Home":
         logo("\U0001F6A8	SOS \U0001F6A8 Parser \U0001F5C3")
         indexPage()
+    elif choice == "Version Manifest":
+        logo("Version Manifest :1234:")
+        versionMainfestPage()
     elif choice == "Gitaly":
         logo("Gitaly Logs :hourglass_flowing_sand:")
         gitalyPage()
@@ -127,68 +131,137 @@ def gitalyPage():
 #            st.write(selected_point)
             timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
             st.table(df.query("time == '{}'".format(timeStamp)))
-    return True
+        return True
+    else:
+        filePathExists()
 
 def metadataPage():
-    pm1, pm2 = st.columns([6, 2])
-    with pm1:
-        m1, m2, m3 = st.columns([3, 2, 3], gap="small")
-        m5, m6 = st.columns([2, 1], gap="small")
-        # CPU info
-        with m1:
-            m1.markdown('<p class="font1"> CPU Details </p>', unsafe_allow_html=True)
-            if st.session_state.valid:
-                cpu_ = extract_cpuInfo(st.session_state.file_path)
-                for c in cpu_:
-                    m1.markdown("**" + c + " : " + str(cpu_[c]) + "**")
-                m1.markdown("---")
-            else:
-                m1.markdown("No data found")
-        # Memory info
-        with m2:
-            m2.markdown('<p class="font1"> Memory </p>', unsafe_allow_html=True)
-            if st.session_state.valid:
-                mem_info = meminfo(st.session_state.file_path)
-                for c in mem_info:
-                    m2.markdown("**" + c + " : " + convert_storage_units(int(mem_info[c]),"MB") + "**")
-                m2.markdown("---")
-            else:
-                m2.markdown("No data found")
+    if st.session_state.valid:
+        pm1, pm2 = st.columns([6, 2])
+        with pm1:
+            m1, m2, m3 = st.columns([3, 2, 3], gap="small")
+            m5, m6 = st.columns([2, 1], gap="small")
+            # CPU info
+            with m1:
+                m1.markdown('<p class="font1"> CPU Details </p>', unsafe_allow_html=True)
+                if st.session_state.valid:
+                    cpu_ = extract_cpuInfo(st.session_state.file_path)
+                    for c in cpu_:
+                        m1.markdown("**" + c + " : " + str(cpu_[c]) + "**")
+                    m1.markdown("---")
+                else:
+                    m1.markdown("No data found")
+            # Memory info
+            with m2:
+                m2.markdown('<p class="font1"> Memory </p>', unsafe_allow_html=True)
+                if st.session_state.valid:
+                    mem_info = meminfo(st.session_state.file_path)
+                    for c in mem_info:
+                        m2.markdown("**" + c + " : " + convert_storage_units(int(mem_info[c]),"MB") + "**")
+                    m2.markdown("---")
+                else:
+                    m2.markdown("No data found")
 
-        # Up time
-        with m3:
-            m3.markdown('<p class="font1"> Uptime  </p>', unsafe_allow_html=True)
-            if st.session_state.valid:
-                up_time = uptime(st.session_state.file_path)
-                for c in up_time:
-                    m3.markdown("**" + c + " : " + str(up_time[c]) + "**")
-                m3.markdown("---")
-            else:
-                m3.markdown("No data found")
+            # Up time
+            with m3:
+                m3.markdown('<p class="font1"> Uptime  </p>', unsafe_allow_html=True)
+                if st.session_state.valid:
+                    up_time = uptime(st.session_state.file_path)
+                    for c in up_time:
+                        m3.markdown("**" + c + " : " + str(up_time[c]) + "**")
+                    m3.markdown("---")
+                else:
+                    m3.markdown("No data found")
 
-        # Top five mounts
-        with m5:
-            m5.markdown(
-                '<p class="font1">  Top 5 Disk mounts  </p>', unsafe_allow_html=True
+            # Top five mounts
+            with m5:
+                m5.markdown(
+                    '<p class="font1">  Top 5 Disk mounts  </p>', unsafe_allow_html=True
+                )
+                if st.session_state.valid:
+                    disk_mount = parse_df_hT_output(st.session_state.file_path)
+                    data_ = []
+                    data_.append(disk_mount[0].keys())
+                    for d in disk_mount:
+                        data_.append(d.values())
+                    m5.table(data_)
+                    m5.markdown("---")
+                else:
+                    m5.markdown("No data found")
+
+            # CPU_Test
+            with m6:
+                m6.markdown(
+                    '<p class="font1"> CPU Pressure test  </p>', unsafe_allow_html=True
+                )
+                if st.session_state.valid:
+                    cpu_pressure = pressure_results(st.session_state.file_path)[0]
+                    data_ = []
+                    data_x = []
+                    data_.append(cpu_pressure["some"].keys())
+                    for d in cpu_pressure["some"]:
+                        data_x.append(cpu_pressure["some"][d])
+                    data_.append(data_x)
+                    data_x = []
+                    data_.append(cpu_pressure["full"].keys())
+                    for d in cpu_pressure["full"]:
+                        data_x.append(cpu_pressure["full"][d])
+                    data_.append(data_x)
+                    m6.table(data_)
+                    m6.markdown("---")
+                else:
+                    m6.markdown("No data found")
+
+            # Top 10 processes
+            with pm1:
+                pm1.markdown(
+                    '<p class="font1"> Top 10 processes  </p>', unsafe_allow_html=True
+                )
+                if st.session_state.valid:
+                    top_p = extract_top_processes(st.session_state.file_path)
+                    data_ = []
+                    for d in top_p:
+                        pm1.text(d + "\n")
+                    pm1.markdown("---")
+                else:
+                    pm1.markdown("No data found")
+
+            # Failed migrations
+            with pm1:
+                pm1.markdown(
+                    '<p class="font1"> Failed migrations </p>', unsafe_allow_html=True
+                )
+                if st.session_state.valid:
+                    failed_migration = failed_migrations(st.session_state.file_path)
+                    data_ = []
+                    if failed_migration:
+                        data_.append(failed_migration[0].keys())
+                    for d in failed_migration:
+                        data_.append(d.values())
+                    pm1.table(data_)
+                    pm1.markdown("---")
+                else:
+                    pm1.markdown("No data found")
+
+        # Gitlab services
+        with pm2:
+            pm2.markdown('<p class="font1"> GitLab Services  </p>', unsafe_allow_html=True)
+            if st.session_state.valid:
+                s_status = extract_services(st.session_state.file_path)
+                for s in s_status:
+                    pm2.markdown(
+                        "**" + s + " : " + ("✅" if s_status[s] == "run:" else "🔥") + "**"
+                    )
+                pm2.markdown("---")
+            else:
+                pm2.markdown("No data found")
+
+            # Memory Test
+            pm2.markdown(
+                '<p class="font1">  Memory Pressure test  </p>', unsafe_allow_html=True
             )
             if st.session_state.valid:
-                disk_mount = parse_df_hT_output(st.session_state.file_path)
-                data_ = []
-                data_.append(disk_mount[0].keys())
-                for d in disk_mount:
-                    data_.append(d.values())
-                m5.table(data_)
-                m5.markdown("---")
-            else:
-                m5.markdown("No data found")
-
-        # CPU_Test
-        with m6:
-            m6.markdown(
-                '<p class="font1"> CPU Pressure test  </p>', unsafe_allow_html=True
-            )
-            if st.session_state.valid:
-                cpu_pressure = pressure_results(st.session_state.file_path)[0]
+                cpu_pressure = pressure_results(st.session_state.file_path)[1]
                 data_ = []
                 data_x = []
                 data_.append(cpu_pressure["some"].keys())
@@ -200,76 +273,12 @@ def metadataPage():
                 for d in cpu_pressure["full"]:
                     data_x.append(cpu_pressure["full"][d])
                 data_.append(data_x)
-                m6.table(data_)
-                m6.markdown("---")
+                pm2.markdown("---")
             else:
-                m6.markdown("No data found")
-
-        # Top 10 processes
-        with pm1:
-            pm1.markdown(
-                '<p class="font1"> Top 10 processes  </p>', unsafe_allow_html=True
-            )
-            if st.session_state.valid:
-                top_p = extract_top_processes(st.session_state.file_path)
-                data_ = []
-                for d in top_p:
-                    pm1.text(d + "\n")
-                pm1.markdown("---")
-            else:
-                pm1.markdown("No data found")
-
-        # Failed migrations
-        with pm1:
-            pm1.markdown(
-                '<p class="font1"> Failed migrations </p>', unsafe_allow_html=True
-            )
-            if st.session_state.valid:
-                failed_migration = failed_migrations(st.session_state.file_path)
-                data_ = []
-                if failed_migration:
-                    data_.append(failed_migration[0].keys())
-                for d in failed_migration:
-                    data_.append(d.values())
-                pm1.table(data_)
-                pm1.markdown("---")
-            else:
-                pm1.markdown("No data found")
-
-    # Gitlab services
-    with pm2:
-        pm2.markdown('<p class="font1"> GitLab Services  </p>', unsafe_allow_html=True)
-        if st.session_state.valid:
-            s_status = extract_services(st.session_state.file_path)
-            for s in s_status:
-                pm2.markdown(
-                    "**" + s + " : " + ("✅" if s_status[s] == "run:" else "🔥") + "**"
-                )
-            pm2.markdown("---")
-        else:
-            pm2.markdown("No data found")
-
-        # Memory Test
-        pm2.markdown(
-            '<p class="font1">  Memory Pressure test  </p>', unsafe_allow_html=True
-        )
-        if st.session_state.valid:
-            cpu_pressure = pressure_results(st.session_state.file_path)[1]
-            data_ = []
-            data_x = []
-            data_.append(cpu_pressure["some"].keys())
-            for d in cpu_pressure["some"]:
-                data_x.append(cpu_pressure["some"][d])
-            data_.append(data_x)
-            data_x = []
-            data_.append(cpu_pressure["full"].keys())
-            for d in cpu_pressure["full"]:
-                data_x.append(cpu_pressure["full"][d])
-            data_.append(data_x)
-            pm2.markdown("---")
-        else:
-            pm2.markdown("No data found")
-    return True
+                pm2.markdown("No data found")
+        return True
+    else:
+        filePathExists()
 
 def productionLogsPage():
     if st.session_state.valid:
@@ -332,7 +341,9 @@ def productionLogsPage():
 #            st.write(selected_point)
             timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
             st.table(df.query("time == '{}'".format(timeStamp)))
-    return True
+        return True
+    else:
+        filePathExists()
 
 
 @st.cache_data()
@@ -441,7 +452,9 @@ def sidekiqPage():
 #            st.write(selected_point)
             timeStamp =pd.to_datetime(selected_point[0]["x"],utc=True).isoformat()
             st.table(df.query("time == '{}'".format(timeStamp)))
-    return True
+        return True
+    else:
+        filePathExists()
 
 
 
@@ -563,6 +576,22 @@ def logo(text):
     cl1.title(text)
     image = Image.open('static/gitlab_logo.png')
     cl3.image(image,width=200)
+
+def versionMainfestPage():
+    if st.session_state.valid:
+        data_ = getManifestVersions(st.session_state.file_path)
+        cm = st.columns([1, 1, 1, 1, 1, 1,1,1])
+        metadata = importantVersions(data_)
+        print(metadata)
+        for x, meta_in in enumerate(metadata.keys()):
+            cm[x].metric(meta_in, metadata[meta_in])
+        st.table(data_)
+        return True
+    else:
+        filePathExists()
+
+def filePathExists():
+    st.markdown("#### Please provide a valid path to the logs directory")
 
 if __name__ == "__main__":
     main()

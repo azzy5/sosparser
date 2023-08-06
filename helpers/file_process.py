@@ -1,7 +1,6 @@
 #make sure this file can be imported from the root folder of the project
 
-import tarfile, re
-import os, random
+import os, random, re, json
 
 destination_folder = '~/Documents/extracted/'
 
@@ -222,3 +221,38 @@ def extract_top_processes(folder_):
             if not line.isspace():
                 process_lines.append(line.strip())
     return process_lines[:11]
+
+
+#./opt/gitlab
+def getManifestVersions(folder_):
+    with open(folder_ + '/opt/gitlab/version-manifest.json', 'r') as f:
+        data = json.load(f)
+
+    license_info = data.get('software')
+    result_list = []
+
+    for license_name, license_details in license_info.items():
+        data_dict = {}
+        data_dict['name'] = license_name
+        data_dict['display_version'] = license_details.get('display_version', '')
+        data_dict['vendor'] = license_details.get('vendor', '')
+        data_dict['license'] = license_details.get('license', '')
+        result_list.append(data_dict)
+    return result_list
+
+def importantVersions(versions_):
+    important_list = ["git",
+                      "gitaly",
+                      "postgresql",
+                      "ruby",
+                      "grafana",
+                      "nginx",
+                      "openssl",
+                      "redis"]
+    output = {}
+    for software_dict in versions_:
+        name = software_dict.get('name')
+        display_version = software_dict.get('display_version')
+        if name in important_list:
+            output[name] = display_version
+    return output
