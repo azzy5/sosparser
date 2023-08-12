@@ -14,6 +14,7 @@ from helpers.gitalyLogs import *
 from helpers.plotting import *
 from helpers.productionLogs import *
 from helpers.sidekiqLogs import *
+from helpers.apiJson import *
 from helpers.utils import *
 
 from PIL import Image
@@ -34,17 +35,18 @@ def main():
     file_path = ""
     with st.sidebar:
         # Ensure "Metadata" remains top of menu after "Home" in sidebar for quick system details check
-        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq","Version Manifest"]
+        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq","API Json","Version Manifest"]
         choice = option_menu(
             "Menu",
             menuItems,
             icons=[
                 "house",
                 "book fill",
-                "kanban",
-                "gear",
                 "git",
-                "hash"
+                "gear",
+                "kanban",
+                "arrow-down-up",
+                "123"
             ],
             menu_icon="app-indicator",
             default_index=0,
@@ -79,6 +81,9 @@ def main():
     elif choice == "Sidekiq":
         logo("Sidekiq Logs \U0001F916")
         sidekiqPage()
+    elif choice == "API Json":
+        logo("API Json :spiral_note_pad:")
+        apiJsonLogs()
 
     return True
 
@@ -365,7 +370,11 @@ def getGitalyDataFrame(file_path):
     df = convert_to_dataframe(log_file)
     return [df,debug]
 
- 
+@st.cache_data()
+def getAPIDataFrame(file_path):
+    log_file, debug = read_log_file_api(file_path)
+    df = convert_to_dataframe(log_file)
+    return [df,debug]
 
 def sidekiqPage():
     if st.session_state.valid:
@@ -457,7 +466,17 @@ def sidekiqPage():
         filePathExists()
 
 
-
+def apiJsonLogs():
+    if st.session_state.valid:
+        df, debug = getAPIDataFrame(st.session_state.file_path)
+        df,missing_columns = filterColumnsAPI(df)
+        df = mapColumnsAPI(df)
+        goShort = setupAGChart(df)
+        response = AgGrid(
+            df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
+        )
+    else:
+        filePathExists()
 
 
 def process_file(file_):
@@ -592,6 +611,7 @@ def versionMainfestPage():
 
 def filePathExists():
     st.markdown("#### Please provide a valid path to the logs directory")
+
 
 if __name__ == "__main__":
     main()
