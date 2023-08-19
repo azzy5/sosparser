@@ -24,7 +24,7 @@ def convert_to_dataframe(log_data):
     return json_normalize(log_data)
 
 
-def filterColumnsAPI(df, prodcution_columns):
+def filterColumnsAPI(df, api_columns):
     columns_remove = ["db_main_replica_cached_count",
                       "db_main_replica_count",
                       "db_main_replica_duration_s",
@@ -44,13 +44,12 @@ def filterColumnsAPI(df, prodcution_columns):
                      "db_main_wal_cached_count",
                     "db_primary_wal_count"]
     missing_columns = []
-    missing_columns = [column for column in prodcution_columns if column not in df.columns]
     missing_columns = [elem for elem in missing_columns if elem not in columns_remove]
     for column in missing_columns:
         if column not in df.columns:
             df[column] = 0
     for x in df.columns:
-        if x not in prodcution_columns or x in columns_remove:
+        if x not in api_columns or x in columns_remove:
             df = df.drop(columns=x)
     return [df,missing_columns]
 

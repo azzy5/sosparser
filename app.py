@@ -71,19 +71,31 @@ def main():
         versionMainfestPage()
     elif choice == "Gitaly":
         logo("Gitaly Logs :hourglass_flowing_sand:")
-        gitalyPage()
+        if checkFileExists(st.session_state.file_path,"Gitaly"):
+            gitalyPage()
+        else:
+            logFileNotFound("Gitaly")
     elif choice == "Metadata":
         logo("Metadata :warning:")
         metadataPage()
     elif choice == "Production":
         logo("Production Logs :gear:")
-        productionLogsPage()
+        if checkFileExists(st.session_state.file_path,"Production"):
+            productionLogsPage()
+        else:
+            logFileNotFound("Production")
     elif choice == "Sidekiq":
         logo("Sidekiq Logs \U0001F916")
-        sidekiqPage()
+        if checkFileExists(st.session_state.file_path,"Sidekiq"):
+            sidekiqPage()
+        else:
+            logFileNotFound("Sidekiq")
     elif choice == "API Json":
         logo("API Json :spiral_note_pad:")
-        apiJsonLogs()
+        if checkFileExists(st.session_state.file_path,"API"):
+            apiJsonLogs()
+        else:
+            logFileNotFound("API")
 
     return True
 
@@ -469,7 +481,7 @@ def sidekiqPage():
 def apiJsonLogs():
     if st.session_state.valid:
         df, debug = getAPIDataFrame(st.session_state.file_path)
-        df,missing_columns = filterColumnsAPI(df)
+        df,missing_columns = filterColumnsAPI(df, df.columns)
         df = mapColumnsAPI(df)
         goShort = setupAGChart(df)
         response = AgGrid(
@@ -612,6 +624,8 @@ def versionMainfestPage():
 def filePathExists():
     st.markdown("#### Please provide a valid path to the logs directory")
 
+def logFileNotFound(type_):
+    st.markdown('<p class="font1"> \U0001F6A8 The {} log file was not found. Maybe the logs are not collected from {} node. </p>'.format(type_, type_), unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
