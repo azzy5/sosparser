@@ -16,6 +16,7 @@ from helpers.productionLogs import *
 from helpers.sidekiqLogs import *
 from helpers.apiJson import *
 from helpers.utils import *
+from helpers.workhorse import *
 
 from PIL import Image
 from os.path import exists
@@ -35,18 +36,20 @@ def main():
     file_path = ""
     with st.sidebar:
         # Ensure "Metadata" remains top of menu after "Home" in sidebar for quick system details check
-        menuItems = ["Home", "Metadata", "Gitaly", "Production", "Sidekiq","API Json","Version Manifest"]
+        menuItems = ["Home", "Metadata","Version Manifest", "Gitaly", "Production", "Sidekiq","API Json", "Workhorse"]
         choice = option_menu(
             "Menu",
             menuItems,
             icons=[
                 "house",
                 "book fill",
+                "123",
                 "git",
                 "gear",
                 "kanban",
                 "arrow-down-up",
-                "123"
+                "pc-display-horizontal"
+                
             ],
             menu_icon="app-indicator",
             default_index=0,
@@ -96,7 +99,12 @@ def main():
             apiJsonLogs()
         else:
             logFileNotFound("API")
-
+    elif choice == "Workhorse":
+        logo("Workhorse Logs :mechanical_arm:")
+        if checkFileExists(st.session_state.file_path,"Workhorse"):
+            workhorsePage()
+        else:
+            logFileNotFound("Workhorse")
     return True
 
 def gitalyPage():
@@ -388,6 +396,12 @@ def getAPIDataFrame(file_path):
     df = convert_to_dataframe(log_file)
     return [df,debug]
 
+@st.cache_data()
+def getWorkhorseLogs(file_path):
+    df_logs, df_errors = read_log_file_wh(file_path)
+    return [df_logs, df_errors]
+
+
 def sidekiqPage():
     if st.session_state.valid:
         df, debug = getSKDataFrame(st.session_state.file_path)
@@ -620,6 +634,22 @@ def versionMainfestPage():
         return True
     else:
         filePathExists()
+
+def workhorsePage():
+    if st.session_state.valid:
+        df_logs, df_errors = getWorkhorseLogs(st.session_state.file_path)
+        goShort = setupAGChart(df_logs)
+        response = AgGrid(
+            df_logs, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
+        )
+        st.markdown("---")
+        goShort = setupSmallAGChart(df_errors)
+        AgGrid(
+            df_errors, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "workhorse_errors")
+
+    else:
+        filePathExists()
+
 
 def filePathExists():
     st.markdown("#### Please provide a valid path to the logs directory")

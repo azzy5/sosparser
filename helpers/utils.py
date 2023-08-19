@@ -24,9 +24,9 @@ def checkFileExists(realtivePath, logsType):
         "Production": "/var/log/gitlab/gitlab-rails/production_json.log",
         "Sidekiq": "/var/log/gitlab/sidekiq/current",
         "Gitaly": "/var/log/gitlab/gitaly/current",
-        "API": "/var/log/gitlab/gitlab-rails/api_json.log"
+        "API": "/var/log/gitlab/gitlab-rails/api_json.log",
+        "Workhorse" : "/var/log/gitlab/gitlab-workhorse/current"
     }
-    print(realtivePath + " \n" +logsType_[logsType])
     file_path = realtivePath + logsType_[logsType]
 
     if os.path.exists(file_path):
