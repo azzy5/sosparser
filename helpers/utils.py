@@ -1,5 +1,5 @@
 
-import json
+import json, os
 # global variables
 error_class = "alert alert-danger"
 success_class = "alert alert-success"
@@ -19,6 +19,20 @@ files_ = [
     "/top_cpu"
 ]
 
+def checkFileExists(realtivePath, logsType):
+    logsType_ = {
+        "Production": "/var/log/gitlab/gitlab-rails/production_json.log",
+        "Sidekiq": "/var/log/gitlab/sidekiq/current",
+        "Gitaly": "/var/log/gitlab/gitaly/current",
+        "API": "/var/log/gitlab/gitlab-rails/api_json.log"
+    }
+    print(realtivePath + " \n" +logsType_[logsType])
+    file_path = realtivePath + logsType_[logsType]
+
+    if os.path.exists(file_path):
+        return True
+    else:
+        return False
 
 def getFilteredDataSK(df):
     return df[["time", "severity", "cpu_s", "duration_s", "db_duration_s"]]

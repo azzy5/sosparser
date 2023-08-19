@@ -8,8 +8,6 @@ def extract_file(file_):
     log_id = destination_folder + str(random.randint(100000, 999999))
     if not os.path.exists(destination_folder):
         os.makedirs(destination_folder)
-    print(log_id)
-    print(file_.name)
 #    with tarfile.open(file_.name, 'r:gz') as tar:
 #        tar.extractall(path=destination_folder)
 
@@ -104,7 +102,6 @@ def failed_migrations(folder_):
     failed_migration = []
     with open(folder_ + '/gitlab_migrations', 'r') as file:
         for line in file:
-            #print(line.strip().startswith('down'))
             if line.strip().startswith('down'):
                 matching_lines.append(line.rstrip('\n'))
         for x, line in enumerate(matching_lines):
