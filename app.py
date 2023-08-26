@@ -512,7 +512,7 @@ def process_file(file_):
 
 
 def indexPage():
-    c1, c2 = st.columns(2)
+    c1, c2 = st.columns([6.5,3.5])
     with c1:
         st.markdown(
             " This tool uses *Streamlit & Pandas* libraries to parse and display the logs on the page."
@@ -521,15 +521,18 @@ def indexPage():
             "For more information on the tool, please refer to the project : [SOSParser](https://gitlab.com/gitlab-com/support/toolbox/sosparser)"
         )
         st.markdown(   "---")
-        # create a text field and a button. When button is pressed, the text field contents should be passed to a function called 'onButtonCliked()'
         st.markdown(
-            '<p class="font1">Input the log root directory here</p>',
+            '<p class="font2">Input log details or select from previous entries</p>',
             unsafe_allow_html=True,
         )
-        stb = st.text_input("---")
+        stb = st.text_input("Log directory path", key="path", placeholder="")
+        stb1 = st.text_input("Comment (Optional) :", key="comment", placeholder="")
+        scb = st.checkbox("Save log entry", value=True)
         if st.button("Submit"):
             with st.spinner(text="Validating the folder content, processing..."):
                 if validateFilepath(stb, c2):
+                    if scb:
+                        saveLogEntry(stb, stb1)
                     st.session_state.valid = True
                     c2.markdown("---")
                     c2.markdown(
@@ -539,6 +542,13 @@ def indexPage():
                     c2.success("This is a success message!", icon="✅")
                 else:
                     c2.error("Something went wrong, please check file path", icon="🔥")
+        st.markdown(
+            '<p class="font2">Last 10 log files</p>',
+            unsafe_allow_html=True,
+        )
+        logHistory = showLogHistory()
+        #st.table(logHistory)
+        showTabls(logHistory,c2)
 
 def initialize():
     st.set_page_config(
@@ -655,7 +665,33 @@ def filePathExists():
     st.markdown("#### Please provide a valid path to the logs directory")
 
 def logFileNotFound(type_):
-    st.markdown('<p class="font1"> \U0001F6A8 The {} log file was not found. Maybe the logs are not collected from {} node. </p>'.format(type_, type_), unsafe_allow_html=True)
+    st.markdown('<p class="font1"> \U0001F6A8 The {} log file was not found. Maybe the logs are not collected from {} node. </p>'.format(type_, type_), unsafe_allow_html=True)    
+
+def showTabls(log_history, c2):
+    colms = st.columns((0.5, 2, 2, 6,1))
+    fields = ["#", 'Timestamp', 'Comment', 'Path']
+    for col, field_name in zip(colms, fields):
+        # header
+        col.write(field_name)
+    st.markdown("---")
+    for x, entry in enumerate(log_history):
+        col1, col2, col3, col4, col5 = st.columns((0.5, 2, 2, 6,1))
+        col1.write(x)  # index
+        col2.write(entry['Timestamp'])  
+        col3.write(entry['Comment']) 
+        col4.write(entry['Path'])  
+        if col5.button("Load", key=x):
+            if validateFilepath(entry['Path'], c2):
+                st.session_state.valid = True
+                st.session_state.file_path = entry['Path']
+                c2.success("Successfully loaded the logs", icon="✅")
+                c2.markdown("---")
+                c2.markdown(
+                    ":arrow_backward: Select the page from the dropdown menu in the side bar "
+                )
+            else:
+                c2.error("Something went wrong, please check file path", icon="🔥")
+
 
 if __name__ == "__main__":
     main()

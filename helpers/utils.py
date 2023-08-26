@@ -1,5 +1,7 @@
 
 import json, os
+from datetime import datetime as dt
+
 # global variables
 error_class = "alert alert-danger"
 success_class = "alert alert-success"
@@ -103,3 +105,33 @@ def timeConversion(seconds):
     formatted_duration += f"{int(minutes)}m" if minutes >= 1 else ""
     formatted_duration += f"{seconds:.1f}s" if seconds >= 0.1 else ""
     return formatted_duration
+
+def saveLogEntry(logPath, comment):
+    current_data = {
+        "Timestamp": dt.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "Comment": comment,
+        "Path": logPath
+    }
+    
+    try:
+        with open('log_history.json', 'r') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = []
+    
+    data.insert(0, current_data)
+    
+    if len(data) > 10:
+        data.pop()
+
+    with open('log_history.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+
+def showLogHistory():
+    try:
+        with open('log_history.json', 'r') as file:
+            data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        data = []
+    return data
