@@ -9,3 +9,4 @@ temp
 *.pyc
 .venv
 .vscode
+*.json

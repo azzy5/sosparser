@@ -49,9 +49,7 @@ def getJobLogsForCorrelationID(correlation_id, realtivePath, logsType):
     correlation_id_ = []
     for c in correlation_id:
         correlation_id_.append(c["correlation_id"])
-    print(correlation_id_)
     read_path = realtivePath + logsType_[logsType]
-    print(read_path)
     lines = []
     debug = []
     with open(

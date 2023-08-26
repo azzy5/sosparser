@@ -637,7 +637,6 @@ def versionMainfestPage():
         data_ = getManifestVersions(st.session_state.file_path)
         cm = st.columns([1, 1, 1, 1, 1, 1,1,1])
         metadata = importantVersions(data_)
-        print(metadata)
         for x, meta_in in enumerate(metadata.keys()):
             cm[x].metric(meta_in, metadata[meta_in])
         st.table(data_)
