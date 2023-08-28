@@ -497,10 +497,38 @@ def apiJsonLogs():
         df, debug = getAPIDataFrame(st.session_state.file_path)
         df,missing_columns = filterColumnsAPI(df, df.columns)
         df = mapColumnsAPI(df)
+        cm = st.columns([1, 1, 1, 1, 1, 1, 1, 1])
+        metadata = metadataAPI(df)
+        for x, meta_in in enumerate(metadata.keys()):
+            cm[x].metric(meta_in, metadata[meta_in])
         goShort = setupAGChart(df)
         response = AgGrid(
             df, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
         )
+
+        selected = response["selected_rows"]
+        if selected:
+            st.markdown(
+                '<p class="font1">  Selected rows :  </p>', unsafe_allow_html=True
+            )
+            AgGrid(convert_to_dataframe(selected), gridOptions=goShort)
+            sjl = st.button("Show Job Logs")
+            if sjl:
+                st.markdown(
+                    '<p class="font1">  JSON Logs :  </p>', unsafe_allow_html=True
+                )
+                st.write(getJobLogsForCorrelationID(selected,st.session_state.file_path ,"API"))
+        slt1, slt2, slt3 = st.columns([2, 2, 6])
+        top_type = slt1.selectbox(" ", ['Project','Path', 'User', 'Puma Worker', 'Route'])
+        top_filter = slt2.selectbox(" ", ("Duration", "Memory", "DB Duration", "CPU"))
+        dt = pd.json_normalize(getTopInfoAPI(df, top_type, top_filter))
+        st.markdown(
+            '<p class="font1"> Top 10 {} by {} </p>'.format(top_type, top_filter),
+            unsafe_allow_html=True,
+        )
+        go = setupSmallAGChart(dt)
+        AgGrid(dt,gridOptions=go, custom_css=custom_css_prd, allow_unsafe_jscode=True)
+        st.divider()
     else:
         filePathExists()
 
@@ -672,7 +700,6 @@ def showTabls(log_history, c2):
     for col, field_name in zip(colms, fields):
         # header
         col.write(field_name)
-    st.markdown("---")
     for x, entry in enumerate(log_history):
         col1, col2, col3, col4, col5 = st.columns((0.5, 2, 2, 6,1))
         col1.write(x)  # index

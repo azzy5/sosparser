@@ -44,7 +44,8 @@ def getJobLogsForCorrelationID(correlation_id, realtivePath, logsType):
     logsType_ = {
         "Production": "/var/log/gitlab/gitlab-rails/production_json.log",
         "Sidekiq": "/var/log/gitlab/sidekiq/current",
-        "Gitaly": "/var/log/gitlab/gitaly/current"
+        "Gitaly": "/var/log/gitlab/gitaly/current",
+        "API": "/var/log/gitlab/gitlab-rails/api_json.log"
     }
     correlation_id_ = []
     for c in correlation_id:
