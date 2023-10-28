@@ -555,12 +555,25 @@ def indexPage():
         )
         stb = st.text_input("Log directory path", key="path", placeholder="")
         stb1 = st.text_input("Comment (Optional) :", key="comment", placeholder="")
-        scb = st.checkbox("Save log entry", value=True)
+        if st.experimental_get_query_params() != {}:
+            cli_args = st.experimental_get_query_params()
+            c2.empty()
+            if validateFilepath(cli_args['path'][0], c2):
+#                saveLogEntry(cli_args['path'][0], cli_args['comment'][0])
+                st.session_state.valid = True
+                c2.markdown("---")
+                c2.markdown(
+                    ":arrow_backward: Select the page from the dropdown menu in the side bar "
+                )
+                st.session_state.file_path = cli_args['path'][0]
+                c2.success("This is a success message!", icon="✅")
+            else:
+                c2.error("Something went wrong, please check file path", icon="🔥")
         if st.button("Submit"):
             with st.spinner(text="Validating the folder content, processing..."):
+                c2.empty()
                 if validateFilepath(stb, c2):
-                    if scb:
-                        saveLogEntry(stb, stb1)
+                    saveLogEntry(stb, stb1)
                     st.session_state.valid = True
                     c2.markdown("---")
                     c2.markdown(
