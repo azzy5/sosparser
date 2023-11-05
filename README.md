@@ -13,7 +13,7 @@
 ## Installation steps
 
 <details>
-<summary>Steps to setup and run SOSParser</summary>
+<summary>Expand</summary>
 
 1. Clone the repository:
 
@@ -28,13 +28,13 @@ cd sosparser
 pip install -r requirements.txt
 ```
 
-If you have pip3 installed then you can use
+ - If you have pip3 installed then you can use
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
-Or if you want to use a [virtual environment](https://docs.python.org/3/library/venv.html), run the following commands instead:
+ - Or if you want to use a [virtual environment](https://docs.python.org/3/library/venv.html), run the following commands instead:
 
 ```bash
 virtualenv venv
@@ -48,9 +48,9 @@ pip3 install -r requirements.txt
 ## Steps to start the SOSParser
 
 <details>
-<summary>Steps to setup and run SOSParser</summary>
+<summary>Expand</summary>
 
-1. Add the following function to ~/.bashrc or ~/.zshrc file so that the log parser can be triggered from the command line directly:
+1. Add the following function to `~/.bashrc` or `~/.zshrc` file so that the sosparser can be triggered from the command line directly:
 
  ```
 sosparser() {
@@ -69,22 +69,105 @@ sosparser() {
 }
  ```
 
-2. Go to the SOSParser directory and run the following command. This should open a new tab in the browser at `http://localhost:8501`:
+2. Navigate to the SOSParser directory and execute the command below. This will launch a new browser tab at http://localhost:8501::
 
 ```bash
 streamlit run app.py --browser.gatherUsageStats=false
 ```
-3. Once the page is opened, copy the absolute path of the logs directory and paste it in the text box on the application UI, along with an optional comment, and then click on the Submit button.
+
+3. Once the page loads, copy the absolute path of the logs directory. Then, paste this path into the text box on the application's user interface (webpage), add any optional comments, and click the 'Submit' button.
 
 4. We can also open the logs directly from the logs directory in the command line tool as follows:
 
+- We can provide the absolute path to the sosparser command
 ```
-# We can provide the absolute path to the sosparser command
 > sosparser /Users/azzy/Downloads/gitlabsos.dv-git-_20230329105343 
+```
 
-# Or we can just execute sosparser; this will take the pwd value as input by default
+- Or we can just execute sosparser in the log directory (this will take the pwd value as input by default)
+    
+```
 > sosparser 
 ```
+
+5. Logs uploaded through the UI can be optionally saved within the application for easy future reference and analysis.
+
+</details>
+
+---
+## Working with tables
+
+<details>
+<summary>Expand</summary>
+
+Here are the following things we can do with the tables to extract the data:
+
+- *Filter the columns* : By default, the table includes numerous columns that may not be necessary for our purposes. However, we can customize which columns we wish to view by clicking on the _Filter_ button located on the right side of the table.
+
+![SOSParser](static/filter_column.png "SOSParser")
+    
+- *Sort columns* : Click on the column name to sort the data numerically or alphabetically.
+
+![SOSParser](static/sort.png "SOSParser")
+    
+- *Filter Rows* : We can filter the table rows based on specific values. For instance, it's possible to display only the rows that correspond to a particular project name, user, or correlation ID. In fact, we can apply multiple filters to refine the rows further, such as viewing user logs for project XYZ.
+
+| Global row filter            | Column row filter              |
+| ---------------------- | ---------------------- |
+| ![SOSParser](static/filter_row_1.jpg "SOSParser") | ![SOSParser](static/filter_row.jpg "SOSParser") |
+
+
+- *Autosize the column width* : By clicking on the three dots next to the column name in the table, you can select 'Auto size all columns' to automatically adjust and set the width of each column to fit the content of the column headers.
+
+ ![SOSParser](static/auto_size.jpg "SOSParser")
+
+</details>
+
+---
+
+## Fast-stat results 
+
+<details>
+<summary>Expand</summary>
+
+- The individual log pages (Gitaly, Production) by defaults shows the fast-stat resutls on the UI.
+
+![SOSParser](static/fast_meta.jpg "SOSParser")
+
+- On the same page we can find the top 10 results (projects, users etc.) with respect to the selected metric (Duration, Memory, CPU etc.). This is equalent to the `fast-stat top` command.
+
+![SOSParser](static/fast_top.jpg "SOSParser")
+
+</details>
+
+---
+
+## Top 10 results
+
+<details>
+<summary>Expand</summary>
+
+- Similar to fast-stat we can extract the top ten values (like project, user etc) based on the resource usage.
+- For example, the following screenshot shows top 10 paths against duration in api_json.log file
+- ![SOSParser](static/top_ten_1.png "SOSParser")
+
+- Similarly, the following example shows which projects took the highest db duration in Sidekiq log file
+- ![SOSParser](static/top_ten_3.png "SOSParser")
+
+</details>
+
+---
+
+## Errors & warnings
+
+<details>
+<summary>Expand</summary>
+
+- By default, the tool parses errors and warnings based on the known factor like status codes, sevirity etc. These errors are shown in separate tables.
+
+- ![SOSParser](static/error_1.png "SOSParser")
+- ![SOSParser](static/error_2.png "SOSParser")
+ 
 </details>
 
 ---
@@ -106,30 +189,6 @@ streamlit run app.py --browser.gatherUsageStats=false
 
 </details>
 
----
-
-## Working with tables/data
-
-<details>
-<summary>Expand</summary>
-
-Here are the following things we can do with the tables to extract the data:
-
-- *Filter the columns* : By default the table contains a lot of columns which we might not need. But we can select the columns which we are intersted in by clicking on the `Filter` button on the tables right side
-
-![SOSParser](static/filter.jpg "SOSParser")
-    
-- *Sort columns* : We click on the name of the column to sort the column by either number or aplhabet
-
-![SOSParser](static/filter.jpg "SOSParser")
-    
-- *Filter Rows* :We filter the rows of the table based on a value, for example, we can filter all the rows which have a perticular project name, user or correlation id. Infact, we can add multiple filters for the row, like user logs for a project xyz.
-
-![SOSParser](static/filter.jpg "SOSParser")
-
-- **
-
-</details>
 
 ## Plotting graphs
 
