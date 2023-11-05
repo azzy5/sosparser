@@ -1,6 +1,6 @@
 # SOSParser :sos:
 
-**SOSParser** is a lightweight Python tool that parses the [GitLabSOS](https://gitlab.com/gitlab-com/support/toolbox/gitlabsos) logs and provides a graphical user interface to interact with them. We will see more details on this below in this page.
+**SOSParser** is a lightweight Python tool that parses the [GitLabSOS](https://gitlab.com/gitlab-com/support/toolbox/gitlabsos) logs and provides a graphical user interface to interact with them. 
 
 ![sosparser_interface](static/interface.png)
 
@@ -122,14 +122,14 @@ Here are the following things we can do with the tables to extract the data:
 
 ![SOSParser](static/sort.png "SOSParser")
     
-- *Filter Rows* : We can filter the table rows based on specific values. For instance, it's possible to display only the rows that correspond to a particular project name, user, or correlation ID. In fact, we can apply multiple filters to refine the rows further, such as viewing user logs for project XYZ.
+- **Filter Rows** : We can filter the table rows based on specific values. For instance, it's possible to display only the rows that correspond to a particular project name, user, or correlation ID. In fact, we can apply multiple filters to refine the rows further, such as viewing user logs for project XYZ.
 
 | Global row filter            | Column row filter              |
 | ---------------------- | ---------------------- |
 | ![SOSParser](static/filter_row_1.png "SOSParser") | ![SOSParser](static/filter_row.png "SOSParser") |
 
 
-- *Autosize the column width* : By clicking on the three dots next to the column name in the table, you can select 'Auto size all columns' to automatically adjust and set the width of each column to fit the content of the column headers.
+- **Autosize the column width** : By clicking on the three dots next to the column name in the table, you can select 'Auto size all columns' to automatically adjust and set the width of each column to fit the content of the column headers.
 
  ![SOSParser](static/auto_size.png "SOSParser")
 
