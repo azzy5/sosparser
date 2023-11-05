@@ -39,35 +39,12 @@ prodcution_columns = [
     "redis_duration_s",
     "redis_read_bytes",
     "redis_write_bytes",
-    "redis_cache_calls",
-    "redis_cache_duration_s",
-    "redis_cache_read_bytes",
-    "redis_cache_write_bytes",
-    "redis_sessions_calls",
-    "redis_sessions_duration_s",
-    "redis_sessions_read_bytes",
-    "redis_sessions_write_bytes",
     "db_count",
     "db_write_count",
     "db_cached_count",
     "db_replica_count",
     "db_primary_count",
     "db_main_count",
-    "db_main_replica_count",
-    "db_replica_cached_count",
-    "db_primary_cached_count",
-    "db_main_cached_count",
-    "db_main_replica_cached_count",
-    "db_replica_wal_count",
-    "db_primary_wal_count",
-    "db_main_wal_count",
-    "db_main_replica_wal_count",
-    "db_replica_wal_cached_count",
-    "db_primary_wal_cached_count",
-    "db_main_wal_cached_count",
-    "db_main_replica_wal_cached_count",
-    "db_replica_duration_s",
-    "db_primary_duration_s",
     "db_main_duration_s",
     "db_main_replica_duration_s",
     "cpu_s",
@@ -147,7 +124,13 @@ def convert_to_dataframe(log_data):
     return json_normalize(log_data)
 
 def filterColumnsPD(df):
-    columns_remove = ["db_main_replica_duration_s","db_replica_duration_s","db_main_replica_wal_cached_count","db_main_wal_cached_count","db_primary_wal_cached_count","db_main_wal_count","db_main_replica_wal_count","db_replica_wal_cached_count","db_write_count","db_primary_wal_count","db_replica_count", "db_main_replica_count", "db_replica_cached_count","db_primary_wal_count," "db_replica_count","db_main_replica_cached_count", "db_replica_wal_count"]
+    columns_remove = ["db_main_replica_duration_s","redis_shared_state_duration_s",
+                      "db_replica_duration_s", "redis_shared_state_calls",
+                      "redis_sessions_allowed_cross_slot_calls",
+                      "db_main_replica_wal_cached_count", "redis_shared_state_write_bytes",
+                      "db_main_wal_cached_count", "redis_allowed_cross_slot_calls", 
+                      "db_primary_wal_cached_count", "redis_sessions_allowed_cross_slot_calls"
+                      "db_main_wal_count","db_main_replica_wal_count","db_replica_wal_cached_count","db_write_count","db_primary_wal_count","db_replica_count", "db_main_replica_count", "db_replica_cached_count","db_primary_wal_count," "db_replica_count","db_main_replica_cached_count", "db_replica_wal_count"]
     missing_columns = []
     missing_columns = [column for column in prodcution_columns if column not in df.columns]
     missing_columns = [elem for elem in missing_columns if elem not in columns_remove]

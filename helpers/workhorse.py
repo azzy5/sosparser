@@ -22,6 +22,7 @@ def read_log_file_wh(file_path):
 
     error_df = pd.DataFrame(error_logs)
     data_df = pd.DataFrame(data_logs)
+    print(data_df.columns)
     return [data_df,error_df]
 
 

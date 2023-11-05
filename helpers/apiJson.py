@@ -26,24 +26,25 @@ def convert_to_dataframe(log_data):
 
 
 def filterColumnsAPI(df, api_columns):
-    columns_remove = ["db_main_replica_cached_count",
-                      "db_main_replica_count",
-                      "db_main_replica_duration_s",
-                      "db_main_replica_wal_cached_count",
-                      "db_primary_wal_cached_count",
-                      "db_main_wal_count",
-                      "db_main_replica_wal_count",
-                      "db_replica_wal_cached_count",
-                      "db_primary_wal_count",
-                      "db_replica_wal_count",
-                     "db_ci_cached_count",
-                     "db_ci_replica_cached_count",
-                     "db_ci_replica_wal_count",
-                     "db_ci_wal_cached_count",
-                     "db_ci_wal_count",
-                     "db_main_replica_count",
-                     "db_main_wal_cached_count",
-                    "db_primary_wal_count"]
+    # remove the following columns from the list to view them in the table
+
+    columns_remove = ["db_main_replica_cached_count","redis_cache_calls","redis_trace_chunks_read_bytes",
+                      "db_main_replica_count", "redis_cache_duration_s", "redis_trace_chunks_write_bytes",
+                      "db_main_replica_duration_s", "redis_cache_read_bytes", "redis_action_cable_calls",
+                      "db_main_replica_wal_cached_count", "redis_cache_write_bytes", "redis_action_cable_duration_s",
+                      "db_primary_wal_cached_count", "redis_rate_limiting_calls", "redis_action_cable_read_bytes",
+                      "db_main_wal_count", "redis_rate_limiting_duration_s", "redis_action_cable_write_bytes",
+                      "db_main_replica_wal_count", "redis_rate_limiting_read_bytes", "redis_sessions_allowed_cross_slot_calls",
+                      "db_replica_wal_cached_count", "redis_rate_limiting_write_bytes", "redis_sessions_read_bytes",
+                      "db_primary_wal_count", "db_replica_count", "redis_sessions_write_bytes",
+                      "db_replica_wal_count", "db_replica_cached_count", "redis_trace_chunks_calls",
+                     "db_ci_cached_count", "redis_shared_state_calls", "db_primary_count", "db_main_count",
+                     "db_ci_replica_cached_count", "redis_shared_state_duration_s", "db_main_cached_count",
+                     "db_ci_replica_wal_count", "redis_shared_state_read_bytes", "redis_cache_allowed_cross_slot_calls",
+                     "db_ci_wal_cached_count", "redis_shared_state_write_bytes", "redis_allowed_cross_slot_calls",
+                     "db_ci_wal_count", "db_primary_cached_count", "redis_queues_duration_s", "redis_queues_calls",
+                     "db_main_wal_cached_count", "db_primary_duration_s", "redis_queues_write_bytes", "redis_sessions_calls",
+                    "db_replica_duration_s","redis_trace_chunks_duration_s"]
     missing_columns = []
     missing_columns = [elem for elem in missing_columns if elem not in columns_remove]
     for column in missing_columns:
