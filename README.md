@@ -1,8 +1,8 @@
 # SOSParser :sos:
 
-**SOSParser** is a lightweight Python tool that parses the [GitLabSOS](https://gitlab.com/gitlab-com/support/toolbox/gitlabsos) logs and provides a graphical user interface to interact with them. We will see more details on this below in this page.
+**SOSParser** is a lightweight Python tool that parses the [GitLabSOS](https://gitlab.com/gitlab-com/support/toolbox/gitlabsos) logs and provides a graphical user interface to interact with them. 
 
-![sosparser_interface](static/interface.jpg)
+![sosparser_interface](static/interface.png)
 
 
 ## Prerequisites
@@ -95,6 +95,18 @@ streamlit run app.py --browser.gatherUsageStats=false
 </details>
 
 ---
+
+## Metada from the log files
+
+<details>
+<summary>Expand</summary>
+
+- GitLabSOS contains many files that hold valuable information. This tool extracts some metadata from each file and displays the information on the UI:
+
+![sosparser_metadata](static/metadata.png)
+
+</details>
+
 ## Working with tables
 
 <details>
@@ -102,24 +114,24 @@ streamlit run app.py --browser.gatherUsageStats=false
 
 Here are the following things we can do with the tables to extract the data:
 
-- *Filter the columns* : By default, the table includes numerous columns that may not be necessary for our purposes. However, we can customize which columns we wish to view by clicking on the _Filter_ button located on the right side of the table.
+- **Filter the columns** : By default, the table includes numerous columns that may not be necessary for our purposes. However, we can customize which columns we wish to view by clicking on the _Filter_ button located on the right side of the table.
 
 ![SOSParser](static/filter_column.png "SOSParser")
     
-- *Sort columns* : Click on the column name to sort the data numerically or alphabetically.
+- **Sort columns** : Click on the column name to sort the data numerically or alphabetically.
 
 ![SOSParser](static/sort.png "SOSParser")
     
-- *Filter Rows* : We can filter the table rows based on specific values. For instance, it's possible to display only the rows that correspond to a particular project name, user, or correlation ID. In fact, we can apply multiple filters to refine the rows further, such as viewing user logs for project XYZ.
+- **Filter Rows** : We can filter the table rows based on specific values. For instance, it's possible to display only the rows that correspond to a particular project name, user, or correlation ID. In fact, we can apply multiple filters to refine the rows further, such as viewing user logs for project XYZ.
 
 | Global row filter            | Column row filter              |
 | ---------------------- | ---------------------- |
-| ![SOSParser](static/filter_row_1.jpg "SOSParser") | ![SOSParser](static/filter_row.jpg "SOSParser") |
+| ![SOSParser](static/filter_row_1.png "SOSParser") | ![SOSParser](static/filter_row.png "SOSParser") |
 
 
-- *Autosize the column width* : By clicking on the three dots next to the column name in the table, you can select 'Auto size all columns' to automatically adjust and set the width of each column to fit the content of the column headers.
+- **Autosize the column width** : By clicking on the three dots next to the column name in the table, you can select 'Auto size all columns' to automatically adjust and set the width of each column to fit the content of the column headers.
 
- ![SOSParser](static/auto_size.jpg "SOSParser")
+ ![SOSParser](static/auto_size.png "SOSParser")
 
 </details>
 
@@ -132,11 +144,11 @@ Here are the following things we can do with the tables to extract the data:
 
 - The individual log pages (Gitaly, Production) by defaults shows the fast-stat resutls on the UI.
 
-![SOSParser](static/fast_meta.jpg "SOSParser")
+![SOSParser](static/fast_meta.png "SOSParser")
 
 - On the same page we can find the top 10 results (projects, users etc.) with respect to the selected metric (Duration, Memory, CPU etc.). This is equalent to the `fast-stat top` command.
 
-![SOSParser](static/fast_top.jpg "SOSParser")
+![SOSParser](static/top_ten_2.png "SOSParser")
 
 </details>
 
@@ -176,10 +188,6 @@ Here are the following things we can do with the tables to extract the data:
 
 <details>
 <summary>Expand</summary>
-
-- GitLabSOS contains many files that hold valuable information. This tool extracts some metadata from each file and displays the information on the UI:
-
-![sosparser_metadata](static/metadata.jpg)
 
 - Other than the metadata, the tool converts the log file contents (GitLab, Production, API, etc.) into a Pandas DataFrame. We can perform a variety of arithmetic and logical operations on these DataFrames. For example, the application can generate the results of fast-stats, which is really helpful when troubleshooting an issue.
 
