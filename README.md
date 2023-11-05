@@ -2,7 +2,7 @@
 
 **SOSParser** is a lightweight Python tool that parses the [GitLabSOS](https://gitlab.com/gitlab-com/support/toolbox/gitlabsos) logs and provides a graphical user interface to interact with them. We will see more details on this below in this page.
 
-![sosparser_interface](static/interface.jpg)
+![sosparser_interface](static/interface.png)
 
 
 ## Prerequisites
