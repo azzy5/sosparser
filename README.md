@@ -96,10 +96,10 @@ streamlit run app.py --browser.gatherUsageStats=false
 
 ---
 
+## Metada from the log files
+
 <details>
 <summary>Expand</summary>
-
-## Metada from the log files
 
 - GitLabSOS contains many files that hold valuable information. This tool extracts some metadata from each file and displays the information on the UI:
 
