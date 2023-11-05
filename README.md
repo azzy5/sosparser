@@ -148,7 +148,7 @@ Here are the following things we can do with the tables to extract the data:
 
 - On the same page we can find the top 10 results (projects, users etc.) with respect to the selected metric (Duration, Memory, CPU etc.). This is equalent to the `fast-stat top` command.
 
-![SOSParser](static/fast_top.png "SOSParser")
+![SOSParser](static/top_ten_2.png "SOSParser")
 
 </details>
 
