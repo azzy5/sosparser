@@ -66,11 +66,11 @@ prodcution_columns = [
 
 
 def read_log_file_pr(file_path):
-    print("reading file")
     lines = []
     debug = []
+    file_path = selectPath(file_path)
     with open(
-        file_path + "/var/log/gitlab/gitlab-rails/production_json.log", "r"
+        file_path , "r"
     ) as file:
         log_lines = file.readlines()
     for x, line in enumerate(log_lines):
@@ -85,6 +85,11 @@ def read_log_file_pr(file_path):
                 debug.append(line)
     return [lines, debug]
 
+def selectPath(file_path):
+    if os.path.exists(file_path + "/var/log/gitlab/gitlab-rails/production_json.log"):
+        return file_path + "/var/log/gitlab/gitlab-rails/production_json.log"
+    else:
+        return file_path + "/var/log/apps/gitlab/gitlab-rails/production_json.log"
 
 dict_cType = {
     'Controller':'controller',  'Project':'meta.project','Path': 'path', 'Remote IP' : 'remote_ip', 'User': 'meta.user', 'Worker ID' : 'worker_id', 'User Agent' : 'ua'

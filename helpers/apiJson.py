@@ -7,7 +7,8 @@ from pandas import json_normalize
 def read_log_file_api(file_path):
     lines =[]
     debug = []
-    with open(file_path + "/var/log/gitlab/gitlab-rails/api_json.log", 'r') as file:
+    file_path = selectPath(file_path)
+    with open(file_path, 'r') as file:
         log_lines = file.readlines()
     for x, line in enumerate(log_lines):
         try:
@@ -111,3 +112,8 @@ def getTopInfoAPI(df, cType='meta.project',filter_type = 'duration_s'):
         cType_data.append(t)
     return cType_data 
 
+def selectPath(file_path):
+    if os.path.exists(file_path + "/var/log/gitlab/gitlab-rails/api_json.log"):
+        return file_path + "/var/log/gitlab/gitlab-rails/api_json.log"
+    else:
+        return file_path + "/var/log/apps/gitlab/gitlab-rails/api_json.log"
