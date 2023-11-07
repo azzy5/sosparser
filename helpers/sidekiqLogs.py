@@ -1,4 +1,4 @@
-from inspect import iscode
+import os
 from pandas import json_normalize
 import streamlit as st
 import pandas as pd
@@ -129,10 +129,10 @@ def setupSmallAGChart(df):
 
     
 def read_log_file(file_path):
-    print("reading file")
     lines = []
     debug = []
-    with open(file_path + "/var/log/gitlab/sidekiq/current", "r") as file:
+    file_path = selectPath(file_path)
+    with open(file_path, "r") as file:
         log_lines = file.readlines()
     for x, line in enumerate(log_lines):
         try:
@@ -146,6 +146,11 @@ def read_log_file(file_path):
                 debug.append(line)
     return [lines, debug]
 
+def selectPath(file_path):
+    if os.path.exists(file_path + "/var/log/gitlab/sidekiq/current"):
+        return file_path + "/var/log/gitlab/sidekiq/current"
+    else:
+        return file_path + "/var/log/apps/gitlab/sidekiq/current"
 
 def convert_to_dataframe(log_data):
     return json_normalize(log_data)
