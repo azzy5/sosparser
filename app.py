@@ -17,6 +17,7 @@ from helpers.sidekiqLogs import *
 from helpers.apiJson import *
 from helpers.utils import *
 from helpers.workhorse import *
+from helpers.auditEvents import *
 
 from PIL import Image
 from os.path import exists
@@ -36,7 +37,7 @@ def main():
     file_path = ""
     with st.sidebar:
         # Ensure "Metadata" remains top of menu after "Home" in sidebar for quick system details check
-        menuItems = ["Home", "Metadata","Version Manifest", "Gitaly", "Production", "Sidekiq","API Json", "Workhorse"]
+        menuItems = ["Home", "Metadata","Version Manifest", "Gitaly", "Production", "Sidekiq","API Json", "Workhorse", "Audit Events"]
         choice = option_menu(
             "Menu",
             menuItems,
@@ -48,7 +49,8 @@ def main():
                 "gear",
                 "kanban",
                 "arrow-down-up",
-                "pc-display-horizontal"
+                "pc-display-horizontal",
+                "file-ruled"
                 
             ],
             menu_icon="app-indicator",
@@ -105,6 +107,12 @@ def main():
             workhorsePage()
         else:
             logFileNotFound("Workhorse")
+    elif choice == "Audit Events":
+        logo("Audit Events :ledger:")
+        if checkFileExists(st.session_state.file_path,"Audit Events"):
+            auditEvents()
+        else:
+            logFileNotFound("Audit Events")
     return True
 
 def gitalyPage():
@@ -401,6 +409,12 @@ def getWorkhorseLogs(file_path):
     df_logs, df_errors = read_log_file_wh(file_path)
     return [df_logs, df_errors]
 
+@st.cache_data()
+def getAuditEvents(file_path):
+    df_logs, df_errors = read_log_file_ae(file_path)
+    return [df_logs, df_errors]
+
+
 
 def sidekiqPage():
     if st.session_state.valid:
@@ -688,11 +702,19 @@ def versionMainfestPage():
 def workhorsePage():
     if st.session_state.valid:
         df_logs, df_errors = getWorkhorseLogs(st.session_state.file_path)
+        st.markdown(
+            '<p class="font2">Workhorse logs</p>',
+            unsafe_allow_html=True,
+        )
         goShort = setupAGChart(df_logs)
         response = AgGrid(
             df_logs, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
         )
         st.markdown("---")
+        st.markdown(
+            '<p class="font2">Errors in the logs</p>',
+            unsafe_allow_html=True,
+        )
         goShort = setupSmallAGChart(df_errors)
         AgGrid(
             df_errors, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "workhorse_errors")
@@ -731,6 +753,23 @@ def showTabls(log_history, c2):
             else:
                 c2.error("Something went wrong, please check file path", icon="🔥")
 
+def auditEvents():
+    if st.session_state.valid:
+        df_logs, df_errors = getAuditEvents(st.session_state.file_path)
+        st.markdown(
+            '<p class="font2">Entries from the Audit event log file :</p>',
+            unsafe_allow_html=True,
+        )
+        goShort = setupAGChart(df_logs)
+        response = AgGrid(
+            df_logs, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True
+        )
+        st.markdown("---")
+        goShort = setupSmallAGChart(df_errors)
+        AgGrid(
+            df_errors, gridOptions=goShort, custom_css=custom_css_prd, allow_unsafe_jscode=True, key = "Audit Event")
+    else:
+        filePathExists()
 
 if __name__ == "__main__":
     main()
