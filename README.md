@@ -7,7 +7,7 @@
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.7 to 3.11 (due to https://gitlab.com/gitlab-com/support/toolbox/sosparser/-/issues/17)
 - pip (or pip3)
 
 ## Installation steps
