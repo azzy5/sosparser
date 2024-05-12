@@ -165,18 +165,44 @@ def timeConversion(seconds):
     formatted_duration += f"{seconds:.1f}s" if seconds >= 0.1 else ""
     return formatted_duration
 
+# calculates RPS by deviding total duration with total number of requests.
+def calculate_rps(df):
+    total_count = len(df)
+    if not df['time'].empty:
+        min_time = df['time'].min()
+        max_time = df['time'].max()
+        total_duration_seconds = (max_time - min_time).total_seconds()
+        if total_duration_seconds > 0:
+            rps = total_count / total_duration_seconds
+        else:
+            rps = 0
+    else:
+        rps = 0
+    return rps
+
 #MetaData extraction and return
 
 def metadataPD(df):
-    meta_ = {}
-    meta_['Count'] = df.shape[0]
-    meta_['Duration'] = timeConversion( df['duration_s'].sum())
-    meta_['RPS'] = round(meta_['Count']/df['duration_s'].sum(), 2)
-    meta_['DB Duration'] = timeConversion( df['db_duration_s'].sum())
-    meta_['Redis Duration'] = timeConversion( df['redis_duration_s'].sum())
-    meta_['Queue Duration'] = timeConversion( df['queue_duration_s'].sum())
-    meta_['CPU'] = timeConversion( df['cpu_s'].sum())
-    meta_['Memory'] = convert_storage_units(df['mem_bytes'].sum()/1024,'KB')
+    total_requests = len(df)
+    duration_sum = df['duration_s'].sum()
+    db_duration_sum = df['db_duration_s'].sum()
+    redis_duration_sum = df['redis_duration_s'].sum()
+    view_duration_sum = df['view_duration_s'].sum()
+    cpu_sum = df['cpu_s'].sum()
+    mem_bytes_sum = df['mem_bytes'].sum()
+    average_cpu = df['cpu_s'].mean()
+    average_memory_mb = df['mem_bytes'].mean() / (1024 ** 2)
+
+    meta_ = {
+        'Count': total_requests,
+        'Duration': timeConversion(duration_sum),
+        'RPS': round(calculate_rps(df), 2) if duration_sum > 0 else 0,
+        'DB Duration': timeConversion(db_duration_sum),
+        'Redis Duration': timeConversion(redis_duration_sum),
+        'View Duration': timeConversion(view_duration_sum),
+        'CPU': timeConversion(cpu_sum),
+        'Memory': f"{mem_bytes_sum / (1024 ** 3):.2f} GB",  # Convert bytes to GB
+    }
     return meta_
 
 def showWarningsPD(df):
